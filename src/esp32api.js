@@ -1,5 +1,5 @@
-export const url = "wss://junyan:elite_392101@mqtt.longan.link:8084/mqtt";
-
+export const url = "wss://yinxi:gndp3106@mqtt.longan.link:8084/mqtt";
+// wss://junyan:elite_392101@mqtt.longan.link:8084/mqtt
 export const LonganCore1 = {
   passage: "LonganCore1",
   message: {

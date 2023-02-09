@@ -57,102 +57,132 @@ function Car(props) {
         {/* left */}
         <Box sx={button_left}>
           {/* left_top */}
-          <Box
+          <button
             onMouseDown={() => revise(one)}
             onMouseUp={() => stop()}
-            sx={{
+            onTouchStart={() => {
+              revise(one);
+            }}
+            onTouchEnd={() => {
+              stop();
+            }}
+            style={{
+              width: "50px",
+              height: "50px",
               position: "absolute",
               bottom: 140 + offsetLeft_bottom,
               left: 30 + offsetLeft_left,
               background: "honeydew",
               borderRadius: "50%",
             }}
-          >
-            <IconButton size="large">
-              <ArrowUpwardRoundedIcon fontSize="inherit" />
-            </IconButton>
-          </Box>
+          ></button>
           {/* left_tottom */}
-          <Box
+          <button
             onMouseDown={() => revise(two)}
             onMouseUp={() => stop()}
-            sx={{
+            onTouchStart={() => {
+              revise(two);
+            }}
+            onTouchEnd={() => {
+              stop();
+            }}
+            style={{
+              width: "50px",
+              height: "50px",
               position: "absolute",
               bottom: 50 + offsetLeft_bottom,
               left: 30 + offsetLeft_left,
               background: "honeydew",
               borderRadius: "50%",
             }}
-          >
-            <IconButton size="large">
-              <ArrowDownwardRoundedIcon fontSize="inherit" />
-            </IconButton>
-          </Box>
+          ></button>
           {/* left_left */}
-          <Box
+          <button
             onMouseDown={() => revise(three)}
             onMouseUp={() => stop()}
-            sx={{
+            onTouchStart={() => {
+              revise(three);
+            }}
+            onTouchEnd={() => {
+              stop();
+            }}
+            style={{
+              width: "50px",
+              height: "50px",
               position: "absolute",
               bottom: 95 + offsetLeft_bottom,
               left: -14 + offsetLeft_left,
               background: "honeydew",
               borderRadius: "50%",
             }}
-          >
-            <IconButton size="large">
-              <SubdirectoryArrowLeftRoundedIcon fontSize="inherit" />
-            </IconButton>
-          </Box>
+          ></button>
           {/* left_right */}
-          <Box
+          <button
             onMouseDown={() => revise(four)}
             onMouseUp={() => stop()}
-            sx={{
+            onTouchStart={() => {
+              revise(four);
+            }}
+            onTouchEnd={() => {
+              stop();
+            }}
+            style={{
+              width: "50px",
+              height: "50px",
               position: "absolute",
               bottom: 95 + offsetLeft_bottom,
               left: 74 + offsetLeft_left,
               background: "honeydew",
               borderRadius: "50%",
             }}
-          >
-            <IconButton size="large">
-              <SubdirectoryArrowRightRoundedIcon fontSize="inherit" />
-            </IconButton>
-          </Box>
+          ></button>
         </Box>
         {/* right */}
         {/* 右上 */}
         <Box sx={button_right}>
-          <Box onMouseDown={() => revise(five)} onMouseUp={() => stop()}>
-            <IconButton
-              sx={{
-                position: "absolute",
-                top: 140 + offsetRight_top,
-                right: +90 + offsetRight_right,
-                background: "honeydew",
-                borderRadius: "50%",
-              }}
-              size="large"
-            >
-              <StopCircleRoundedIcon fontSize="inherit" />
-            </IconButton>
-          </Box>
+          <button
+            onMouseDown={() => revise(five)}
+            onMouseUp={() => stop()}
+            onTouchStart={() => {
+              revise(five);
+            }}
+            onTouchEnd={() => {
+              stop();
+            }}
+            style={{
+              width: "50px",
+              height: "50px",
+              position: "absolute",
+              top: 140 + offsetRight_top,
+              right: +90 + offsetRight_right,
+              background: "honeydew",
+              borderRadius: "50%",
+            }}
+          ></button>
           {/* 又下 */}
-          <Box onMouseDown={() => revise(six)} onMouseUp={() => stop()}>
-            <IconButton
-              sx={{
-                position: "absolute",
-                top: 200 + offsetRight_top,
-                right: 30 + offsetRight_right,
-                background: "honeydew",
-                borderRadius: "50%",
-              }}
-              size="large"
-            >
+          <button
+            onMouseDown={() => revise(six)}
+            onMouseUp={() => stop()}
+            onTouchStart={() => {
+              revise(six);
+            }}
+            onTouchEnd={() => {
+              stop();
+            }}
+            style={{
+              width: "50px",
+              height: "50px",
+              position: "absolute",
+              top: 200 + offsetRight_top,
+              right: 30 + offsetRight_right,
+              background: "honeydew",
+              borderRadius: "50%",
+            }}
+          >
+            {/* <IconButton size="large">
               <StopCircleRoundedIcon fontSize="inherit" />
-            </IconButton>
-          </Box>
+            </IconButton> */}
+          </button>
         </Box>
       </Box>
     </>

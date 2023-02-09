@@ -1,6 +1,6 @@
 import Car from "../../components/Car";
 import { url } from "../../esp32api";
-import { LonganCore4 } from "../../esp32api";
+import { LonganCore3 } from "../../esp32api";
 
 const ThirdCar = () => {
   return (
@@ -8,8 +8,8 @@ const ThirdCar = () => {
       ThirdCar
       <Car
         urlStr={url}
-        passage={LonganCore4.passage}
-        message={LonganCore4.message}
+        passage={LonganCore3.passage}
+        message={LonganCore3.message}
       />
     </div>
   );

@@ -1,7 +1,7 @@
 import { Box } from "@mui/system";
 import Car from "../../components/Car";
 import { url } from "../../esp32api";
-import { LonganCore2 } from "../../esp32api";
+import { LonganCore4 } from "../../esp32api";
 
 const FourthCar = () => {
   return (
@@ -10,8 +10,8 @@ const FourthCar = () => {
       <Box>
         <Car
           urlStr={url}
-          passage={LonganCore2.passage}
-          message={LonganCore2.message}
+          passage={LonganCore4.passage}
+          message={LonganCore4.message}
         />
       </Box>
     </div>

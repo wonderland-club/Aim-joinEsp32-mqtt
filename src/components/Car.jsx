@@ -23,7 +23,7 @@ function Car(props) {
 
   useEffect(() => {
     const client = mqtt.connect(url);
-    client.on("connect", function () {
+    client.on("connect", () => {
       // 订阅主题
 
       client.subscribe(passage, function (err) {
@@ -39,7 +39,7 @@ function Car(props) {
 
   // 鼠标按下
   const revise = (strText) => {
-    console.log("strText", strText);
+    // console.log("strText", strText);
     setText(strText);
   };
 
@@ -67,19 +67,20 @@ function Car(props) {
               stop();
             }}
             style={{
-              width: "50px",
-              height: "50px",
+              width: buttonSize,
+              height: buttonSize,
               position: "absolute",
-              bottom: 140 + offsetLeft_bottom,
+              bottom: 160 + offsetLeft_bottom,
               left: 30 + offsetLeft_left,
               background: "honeydew",
               borderRadius: "50%",
+              userSelect: "none",
             }}
           ></button>
           {/* left_tottom */}
           <button
-            onMouseDown={() => revise(two)}
-            onMouseUp={() => stop()}
+            // onMouseDown={() => revise(two)}
+            // onMouseUp={() => stop()}
             onTouchStart={() => {
               revise(two);
             }}
@@ -87,19 +88,20 @@ function Car(props) {
               stop();
             }}
             style={{
-              width: "50px",
-              height: "50px",
+              width: buttonSize,
+              height: buttonSize,
               position: "absolute",
-              bottom: 50 + offsetLeft_bottom,
+              bottom: 30 + offsetLeft_bottom,
               left: 30 + offsetLeft_left,
               background: "honeydew",
               borderRadius: "50%",
+              userSelect: "none",
             }}
           ></button>
           {/* left_left */}
           <button
-            onMouseDown={() => revise(three)}
-            onMouseUp={() => stop()}
+            // onMouseDown={() => revise(three)}
+            // onMouseUp={() => stop()}
             onTouchStart={() => {
               revise(three);
             }}
@@ -107,33 +109,36 @@ function Car(props) {
               stop();
             }}
             style={{
-              width: "50px",
-              height: "50px",
+              width: buttonSize,
+              height: buttonSize,
               position: "absolute",
               bottom: 95 + offsetLeft_bottom,
-              left: -14 + offsetLeft_left,
+              left: -24 + offsetLeft_left,
               background: "honeydew",
               borderRadius: "50%",
+              userSelect: "none",
             }}
           ></button>
           {/* left_right */}
           <button
-            onMouseDown={() => revise(four)}
-            onMouseUp={() => stop()}
+            // onMouseDown={() => revise(four)}
+            // onMouseUp={() => stop()}
             onTouchStart={() => {
               revise(four);
+              // stop();
             }}
             onTouchEnd={() => {
               stop();
             }}
             style={{
-              width: "50px",
-              height: "50px",
+              width: buttonSize,
+              height: buttonSize,
               position: "absolute",
               bottom: 95 + offsetLeft_bottom,
-              left: 74 + offsetLeft_left,
+              left: 84 + offsetLeft_left,
               background: "honeydew",
               borderRadius: "50%",
+              userSelect: "none",
             }}
           ></button>
         </Box>
@@ -141,28 +146,30 @@ function Car(props) {
         {/* 右上 */}
         <Box sx={button_right}>
           <button
-            onMouseDown={() => revise(five)}
-            onMouseUp={() => stop()}
+            // onMouseDown={() => revise(five)}
+            // onMouseUp={() => stop()}
             onTouchStart={() => {
-              revise(five);
+              // revise(five);
+              stop();
             }}
             onTouchEnd={() => {
               stop();
             }}
             style={{
-              width: "50px",
-              height: "50px",
+              width: buttonSize,
+              height: buttonSize,
               position: "absolute",
               top: 140 + offsetRight_top,
               right: +90 + offsetRight_right,
               background: "honeydew",
               borderRadius: "50%",
+              userSelect: "none",
             }}
           ></button>
           {/* 又下 */}
           <button
-            onMouseDown={() => revise(six)}
-            onMouseUp={() => stop()}
+            // onMouseDown={() => revise(six)}
+            // onMouseUp={() => stop()}
             onTouchStart={() => {
               revise(six);
             }}
@@ -170,13 +177,14 @@ function Car(props) {
               stop();
             }}
             style={{
-              width: "50px",
-              height: "50px",
+              width: buttonSize,
+              height: buttonSize,
               position: "absolute",
               top: 200 + offsetRight_top,
               right: 30 + offsetRight_right,
               background: "honeydew",
               borderRadius: "50%",
+              userSelect: "none",
             }}
           >
             {/* <IconButton size="large">
@@ -206,8 +214,11 @@ const button_left = {
 const button_right = {
   position: "relative",
 };
+
 const offsetLeft_bottom = 20;
 const offsetLeft_left = 45;
 
 const offsetRight_top = -100;
 const offsetRight_right = 10;
+
+const buttonSize = "70px";

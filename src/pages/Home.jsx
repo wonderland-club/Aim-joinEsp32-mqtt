@@ -18,18 +18,34 @@ const Home = () => {
         <Box>
           <Box sx={linkStyle}>
             <Link style={margin} to={`${First_car_router}`}>
-              <img style={image} src="image/colorCar/blueCar.svg" alt="" />
+              <img
+                style={image}
+                src={process.env.PUBLIC_URL + "/image/colorCar/blueCar.svg"}
+                alt=""
+              />
             </Link>
             <Link style={margin} to={`${Second_car_router}`}>
-              <img style={image} src="image/colorCar/greenCar.svg" alt="" />
+              <img
+                style={image}
+                src={process.env.PUBLIC_URL + "/image/colorCar/greenCar.svg"}
+                alt=""
+              />
             </Link>
           </Box>
           <Box sx={linkStyle}>
             <Link style={margin} to={`${Third_car_router}`}>
-              <img style={image} src="image/colorCar/redCar.svg" alt="" />
+              <img
+                style={image}
+                src={process.env.PUBLIC_URL + "/image/colorCar/redCar.svg"}
+                alt=""
+              />
             </Link>
             <Link style={margin} to={`${Fourth_car_router}`}>
-              <img style={image} src="image/colorCar/yellowCar.svg" alt="" />
+              <img
+                style={image}
+                src={process.env.PUBLIC_URL + "/image/colorCar/yellowCar.svg"}
+                alt=""
+              />
             </Link>
           </Box>
         </Box>

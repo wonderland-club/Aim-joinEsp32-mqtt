@@ -1,10 +1,18 @@
 import Car from "../../components/Car";
+import { url } from "../../esp32api";
+import { LonganCore1 } from "../../esp32api";
 
 const FirstCar = () => {
-  return <div>
-    FirstCar
-    <Car />
-  </div>;
+  return (
+    <div>
+      FirstCar
+      <Car
+        urlStr={url}
+        passage={LonganCore1.passage}
+        message={LonganCore1.message}
+      />
+    </div>
+  );
 };
 
 export default FirstCar;

@@ -6,118 +6,178 @@ import ArrowUpwardRoundedIcon from "@mui/icons-material/ArrowUpwardRounded";
 import SubdirectoryArrowLeftRoundedIcon from "@mui/icons-material/SubdirectoryArrowLeftRounded";
 import SubdirectoryArrowRightRoundedIcon from "@mui/icons-material/SubdirectoryArrowRightRounded";
 import StopCircleRoundedIcon from "@mui/icons-material/StopCircleRounded";
+import LinearProgress from "@mui/material/LinearProgress";
+import { useState, useEffect } from "react";
 
-function Car() {
-  const button = {
-    height: "80vh",
-    width: "100%",
-    display: "flex",
-    justifyContent: "space-between",
+function Car(props) {
+  // 连接
+  const { urlStr, passage } = props;
+
+  const mqtt = require("mqtt");
+  const url = urlStr;
+  // const options = {
+  const [text, setText] = useState();
+  const [init, setInit] = useState(false);
+
+  // 生命周期
+
+  useEffect(() => {
+    const client = mqtt.connect(url);
+    client.on("connect", function () {
+      // 订阅主题
+
+      client.subscribe(passage, function (err) {
+        if (!err && init) {
+          // 发布消息
+          client.publish(passage, text + "");
+        } else {
+          setInit(true);
+        }
+      });
+    });
+  }, [text]);
+
+  // 鼠标按下
+  const revise = (strText) => {
+    console.log("strText", strText);
+    setText(strText);
   };
 
-  const button_left = {
-    position: "relative",
+  // 鼠标松开
+  const stop = () => {
+    console.log("stop");
+    setText("stop");
   };
 
-  const button_right = {
-    position: "relative",
-  };
-  const offsetLeft_bottom = 20;
-  const offsetLeft_left = 45;
-
-  const offsetRight_top = 10;
-  const offsetRight_right = 10;
-
-  const left_top = () => {
-    fetch("green/lighton");
-  };
-
-  const left_bottom = () => {
-    fetch("blue/lighton");
-  };
-
-  const left_left = () => {
-    fetch("green/lightoff");
-  };
-
-  const left_right = () => {
-    fetch("blue/lightoff");
-  };
-
+  const { one, two, three, four, five, six } = props.message;
   return (
-    <Box sx={button}>
-      {/* left */}
-      <Box sx={button_left}>
-        {/* left_top */}
-        <Box
-          onClick={left_top}
-          sx={{
-            position: "absolute",
-            bottom: 140 + offsetLeft_bottom,
-            left: 30 + offsetLeft_left,
-          }}
-        >
-          <IconButton size="large">
-            <ArrowUpwardRoundedIcon fontSize="inherit" />
-          </IconButton>
-        </Box>
-        {/* left_tottom */}
-        <Box
-          onClick={left_bottom}
-          sx={{
-            position: "absolute",
-            bottom: 50 + offsetLeft_bottom,
-            left: 30 + offsetLeft_left,
-          }}
-        >
-          <IconButton size="large">
-            <ArrowDownwardRoundedIcon fontSize="inherit" />
-          </IconButton>
-        </Box>
-        {/* left_left */}
-        <Box
-          onClick={left_left}
-          sx={{
-            position: "absolute",
-            bottom: 95 + offsetLeft_bottom,
-            left: -14 + offsetLeft_left,
-          }}
-        >
-          <IconButton size="large">
-            <SubdirectoryArrowLeftRoundedIcon fontSize="inherit" />
-          </IconButton>
-        </Box>
-        {/* left_right */}
-        <Box
-          onClick={left_right}
-          sx={{
-            position: "absolute",
-            bottom: 95 + offsetLeft_bottom,
-            left: 74 + offsetLeft_left,
-          }}
-        >
-          <IconButton size="large">
-            <SubdirectoryArrowRightRoundedIcon fontSize="inherit" />
-          </IconButton>
-        </Box>
-      </Box>
-      {/* right */}
-      <Box sx={button_right}>
-        <Box>
-          <IconButton
+    <>
+      <LinearProgress />
+      <Box sx={button}>
+        {/* left */}
+        <Box sx={button_left}>
+          {/* left_top */}
+          <Box
+            onMouseDown={() => revise(one)}
+            onMouseUp={() => stop()}
             sx={{
               position: "absolute",
-              t0p: 140 + offsetRight_top,
-              right: 30 + offsetRight_right,
+              bottom: 140 + offsetLeft_bottom,
+              left: 30 + offsetLeft_left,
+              background: "honeydew",
+              borderRadius: "50%",
             }}
-            size="large"
           >
-            <StopCircleRoundedIcon fontSize="inherit" />
-          </IconButton>
+            <IconButton size="large">
+              <ArrowUpwardRoundedIcon fontSize="inherit" />
+            </IconButton>
+          </Box>
+          {/* left_tottom */}
+          <Box
+            onMouseDown={() => revise(two)}
+            onMouseUp={() => stop()}
+            sx={{
+              position: "absolute",
+              bottom: 50 + offsetLeft_bottom,
+              left: 30 + offsetLeft_left,
+              background: "honeydew",
+              borderRadius: "50%",
+            }}
+          >
+            <IconButton size="large">
+              <ArrowDownwardRoundedIcon fontSize="inherit" />
+            </IconButton>
+          </Box>
+          {/* left_left */}
+          <Box
+            onMouseDown={() => revise(three)}
+            onMouseUp={() => stop()}
+            sx={{
+              position: "absolute",
+              bottom: 95 + offsetLeft_bottom,
+              left: -14 + offsetLeft_left,
+              background: "honeydew",
+              borderRadius: "50%",
+            }}
+          >
+            <IconButton size="large">
+              <SubdirectoryArrowLeftRoundedIcon fontSize="inherit" />
+            </IconButton>
+          </Box>
+          {/* left_right */}
+          <Box
+            onMouseDown={() => revise(four)}
+            onMouseUp={() => stop()}
+            sx={{
+              position: "absolute",
+              bottom: 95 + offsetLeft_bottom,
+              left: 74 + offsetLeft_left,
+              background: "honeydew",
+              borderRadius: "50%",
+            }}
+          >
+            <IconButton size="large">
+              <SubdirectoryArrowRightRoundedIcon fontSize="inherit" />
+            </IconButton>
+          </Box>
+        </Box>
+        {/* right */}
+        {/* 右上 */}
+        <Box sx={button_right}>
+          <Box onMouseDown={() => revise(five)} onMouseUp={() => stop()}>
+            <IconButton
+              sx={{
+                position: "absolute",
+                top: 140 + offsetRight_top,
+                right: +90 + offsetRight_right,
+                background: "honeydew",
+                borderRadius: "50%",
+              }}
+              size="large"
+            >
+              <StopCircleRoundedIcon fontSize="inherit" />
+            </IconButton>
+          </Box>
+          {/* 又下 */}
+          <Box onMouseDown={() => revise(six)} onMouseUp={() => stop()}>
+            <IconButton
+              sx={{
+                position: "absolute",
+                top: 200 + offsetRight_top,
+                right: 30 + offsetRight_right,
+                background: "honeydew",
+                borderRadius: "50%",
+              }}
+              size="large"
+            >
+              <StopCircleRoundedIcon fontSize="inherit" />
+            </IconButton>
+          </Box>
         </Box>
       </Box>
-    </Box>
+    </>
   );
 }
 
 export default Car;
+
+const button = {
+  height: "80vh",
+  width: "100%",
+  justifyContent: "space-between",
+  display: "flex",
+  background: "dimgrey",
+};
+
+const button_left = {
+  position: "relative",
+};
+
+const button_right = {
+  position: "relative",
+};
+const offsetLeft_bottom = 20;
+const offsetLeft_left = 45;
+
+const offsetRight_top = -100;
+const offsetRight_right = 10;

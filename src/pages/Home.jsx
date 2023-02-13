@@ -112,7 +112,7 @@ const Home = () => {
     <>
       <Box sx={contents}>
         <Box>
-          <h1 onClick={handleClick(TransitionDown)}>Elite ESP32 Car</h1>
+          <h1>Elite ESP32 Car</h1>
           <h3>{router_to_}</h3>
         </Box>
         <Snackbar

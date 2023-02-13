@@ -1,6 +1,7 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Box from "@mui/material/Box";
-
+import Grid from "@mui/material/Unstable_Grid2";
+import DirectionsCarRoundedIcon from "@mui/icons-material/DirectionsCarRounded";
 import {
   First_car_router,
   Second_car_router,
@@ -8,47 +9,55 @@ import {
   Fourth_car_router,
 } from "../route-constants";
 
+const routerLink = [
+  First_car_router,
+  Second_car_router,
+  Third_car_router,
+  Fourth_car_router,
+];
+
 const Home = () => {
+  const navigate = useNavigate();
+
+  const jump = (router) => {
+    navigate(router);
+
+    console.log(router);
+  };
+
   return (
     <>
       <Box sx={contents}>
         <Box>
           <h1>Elite ESP32 Car</h1>
         </Box>
-        <Box>
-          <Box sx={linkStyle}>
-            <Link style={margin} to={`${First_car_router}`}>
-              <img
-                style={image}
-                src={process.env.PUBLIC_URL + "/image/colorCar/blueCar.svg"}
-                alt=""
-              />
-            </Link>
-            <Link style={margin} to={`${Second_car_router}`}>
-              <img
-                style={image}
-                src={process.env.PUBLIC_URL + "/image/colorCar/greenCar.svg"}
-                alt=""
-              />
-            </Link>
-          </Box>
-          <Box sx={linkStyle}>
-            <Link style={margin} to={`${Third_car_router}`}>
-              <img
-                style={image}
-                src={process.env.PUBLIC_URL + "/image/colorCar/redCar.svg"}
-                alt=""
-              />
-            </Link>
-            <Link style={margin} to={`${Fourth_car_router}`}>
-              <img
-                style={image}
-                src={process.env.PUBLIC_URL + "/image/colorCar/yellowCar.svg"}
-                alt=""
-              />
-            </Link>
-          </Box>
-        </Box>
+
+        <Grid sx={{ width: "60%" }} container>
+          {routerLink.map((item, index) => {
+            return (
+              <Grid
+                sx={{
+                  background: "lightcoral",
+                  borderRadius: "16px",
+                  margin: 1,
+                  display: "flex",
+                  alignContent: "center",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+                xs={5}
+                key={index}
+                onClick={() => jump(item)}
+              >
+                <Box>
+                  <DirectionsCarRoundedIcon sx={{ fontSize: 40 }} />
+                </Box>
+                <Box>{item}</Box>
+              </Grid>
+            );
+          })}
+        </Grid>
       </Box>
     </>
   );
@@ -60,23 +69,4 @@ const contents = {
   height: "80vh",
   display: "flex",
   justifyContent: "space-between",
-};
-
-const linkStyle = {
-  display: "flex",
-  flexDirection: "row",
-  height: "40vh",
-  // justifyContent: "flex-end",
-};
-
-const image = {
-  width: "100%",
-  height: "100%",
-  background: "black",
-  borderRadius: 10,
-  opacity: "0.8",
-};
-
-const margin = {
-  margin: "5px",
 };

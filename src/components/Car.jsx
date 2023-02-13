@@ -1,224 +1,164 @@
 import React from "react";
 import { Box } from "@mui/material";
-import IconButton from "@mui/material/IconButton";
-import ArrowDownwardRoundedIcon from "@mui/icons-material/ArrowDownwardRounded";
-import ArrowUpwardRoundedIcon from "@mui/icons-material/ArrowUpwardRounded";
-import SubdirectoryArrowLeftRoundedIcon from "@mui/icons-material/SubdirectoryArrowLeftRounded";
-import SubdirectoryArrowRightRoundedIcon from "@mui/icons-material/SubdirectoryArrowRightRounded";
-import StopCircleRoundedIcon from "@mui/icons-material/StopCircleRounded";
 import LinearProgress from "@mui/material/LinearProgress";
-import { useState, useEffect } from "react";
-
+import { useState, useEffect, useRef } from "react";
+import mqtt from "mqtt";
+import { Joystick } from "react-joystick-component";
+import Button from "@mui/material/Button";
+import { useNavigate } from "react-router-dom";
 function Car(props) {
-  // 连接
+  // 通道 消息
   const { urlStr, passage } = props;
+  const navigate = useNavigate();
 
-  const mqtt = require("mqtt");
-  const url = urlStr;
-  // const options = {
-  const [text, setText] = useState();
-  const [init, setInit] = useState(false);
+  const clientRef = useRef(null);
 
-  // 生命周期
+  // 连接MQTT
+  useEffect(() => {
+    clientRef.current = mqtt.connect(urlStr);
+    clientRef.current.on("connect", () => {
+      console.log("Connected to MQTT broker");
+    });
+
+    return () => {
+      clientRef.current.end();
+    };
+  }, []);
+
+  //浏览器环境监测 用于判断移动端还是桌面端
+  const [start, setStart] = useState("onTouchStart");
+  const [end, setEnd] = useState("onTouchEnd");
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      if ("ontouchstart" in window) {
+        setStart("onTouchStart");
+        setEnd("onTouchEnd");
+      } else {
+        setStart("onMouseDown");
+        setEnd("onMouseUp");
+      }
+    }
+  }, []);
+
+  // 用于检测有没有在操作中，如果10秒中内无操作，页面将自动跳转至主页
+  const [count, setCount] = useState(10);
 
   useEffect(() => {
-    const client = mqtt.connect(url);
-    client.on("connect", () => {
-      // 订阅主题
+    const timer = setInterval(() => {
+      setCount((c) => c - 1);
+    }, 1000);
+    if (count == 0) {
+      navigate("/");
+    }
+    return () => clearInterval(timer);
+  }, [count]);
 
-      client.subscribe(passage, function (err) {
-        if (!err && init) {
-          // 发布消息
-          client.publish(passage, text + "");
-        } else {
-          setInit(true);
-        }
-      });
-    });
-  }, [text]);
-
-  // 鼠标按下
-  const revise = (strText) => {
-    // console.log("strText", strText);
-    setText(strText);
+  // 发送消息
+  const handleSendMessage = (message) => {
+    clientRef.current.publish(passage, message);
   };
 
-  // 鼠标松开
-  const stop = () => {
-    console.log("stop");
-    setText("stop");
-  };
+  const { Up, Down, Left, Right, Stop, Lifting, Pitching } = props.message;
 
-  const { one, two, three, four, five, six } = props.message;
+  const JoystickDirection = ["FORWARD", "BACKWARD", "LEFT", "RIGHT", "STOP"];
+
+  const [moveRecords, setMoveRecords] = useState("");
+
+  const handleMove = (e) => {
+    setCount(10);
+    // 判断方向是否跟刚刚的方向相同
+    const direction = e.direction;
+    if (moveRecords !== direction) {
+      if (direction == JoystickDirection[0]) {
+        handleSendMessage(Up);
+      } else if (direction == JoystickDirection[1]) {
+        handleSendMessage(Down);
+      } else if (direction == JoystickDirection[2]) {
+        handleSendMessage(Left);
+      } else if (direction == JoystickDirection[3]) {
+        handleSendMessage(Right);
+      }
+      setMoveRecords(direction);
+    }
+  };
+  const handleStop = () => {
+    setMoveRecords(JoystickDirection[4]);
+    handleSendMessage(Stop);
+  };
+  const joystickStart = () => {};
   return (
     <>
+      <button onClick={() => setCount(10)}>{count}</button>
+      <Box>{moveRecords}</Box>
       <LinearProgress />
-      <Box sx={button}>
-        {/* left */}
-        <Box sx={button_left}>
-          {/* left_top */}
-          <button
-            onMouseDown={() => revise(one)}
-            onMouseUp={() => stop()}
-            onTouchStart={() => {
-              revise(one);
-            }}
-            onTouchEnd={() => {
-              stop();
-            }}
-            style={{
-              width: buttonSize,
-              height: buttonSize,
-              position: "absolute",
-              bottom: 160 + offsetLeft_bottom,
-              left: 30 + offsetLeft_left,
-              background: "honeydew",
-              borderRadius: "50%",
-              userSelect: "none",
-            }}
-          ></button>
-          {/* left_tottom */}
-          <button
-            // onMouseDown={() => revise(two)}
-            // onMouseUp={() => stop()}
-            onTouchStart={() => {
-              revise(two);
-            }}
-            onTouchEnd={() => {
-              stop();
-            }}
-            style={{
-              width: buttonSize,
-              height: buttonSize,
-              position: "absolute",
-              bottom: 30 + offsetLeft_bottom,
-              left: 30 + offsetLeft_left,
-              background: "honeydew",
-              borderRadius: "50%",
-              userSelect: "none",
-            }}
-          ></button>
-          {/* left_left */}
-          <button
-            // onMouseDown={() => revise(three)}
-            // onMouseUp={() => stop()}
-            onTouchStart={() => {
-              revise(three);
-            }}
-            onTouchEnd={() => {
-              stop();
-            }}
-            style={{
-              width: buttonSize,
-              height: buttonSize,
-              position: "absolute",
-              bottom: 95 + offsetLeft_bottom,
-              left: -24 + offsetLeft_left,
-              background: "honeydew",
-              borderRadius: "50%",
-              userSelect: "none",
-            }}
-          ></button>
-          {/* left_right */}
-          <button
-            // onMouseDown={() => revise(four)}
-            // onMouseUp={() => stop()}
-            onTouchStart={() => {
-              revise(four);
-              // stop();
-            }}
-            onTouchEnd={() => {
-              stop();
-            }}
-            style={{
-              width: buttonSize,
-              height: buttonSize,
-              position: "absolute",
-              bottom: 95 + offsetLeft_bottom,
-              left: 84 + offsetLeft_left,
-              background: "honeydew",
-              borderRadius: "50%",
-              userSelect: "none",
-            }}
-          ></button>
+      <Box
+        sx={{
+          height: "80vh",
+          justifyContent: "space-around",
+          display: "flex",
+          alignContent: "center",
+          alignItems: "center",
+          background: "lightcoral",
+        }}
+      >
+        {/* 操纵杆 */}
+        <Box>
+          <Joystick
+            size={150}
+            stickSize={70}
+            sticky={false}
+            baseColor="rgb(0, 0, 51,0.2)"
+            stickColor="rgba(133, 37, 60, 0.8)"
+            move={(eve) => handleMove(eve)}
+            stop={handleStop}
+            start={joystickStart}
+          ></Joystick>
         </Box>
-        {/* right */}
-        {/* 右上 */}
-        <Box sx={button_right}>
-          <button
-            // onMouseDown={() => revise(five)}
-            // onMouseUp={() => stop()}
-            onTouchStart={() => {
-              // revise(five);
-              stop();
+
+        <Box sx={{ width: 250 }}>
+          <Button
+            sx={rightButtonStyle}
+            variant="outlined"
+            size="large"
+            fullWidth={true}
+            {...{
+              [start]: () => {
+                handleSendMessage(Lifting);
+                setCount(10);
+              },
             }}
-            onTouchEnd={() => {
-              stop();
-            }}
-            style={{
-              width: buttonSize,
-              height: buttonSize,
-              position: "absolute",
-              top: 140 + offsetRight_top,
-              right: +90 + offsetRight_right,
-              background: "honeydew",
-              borderRadius: "50%",
-              userSelect: "none",
-            }}
-          ></button>
-          {/* 又下 */}
-          <button
-            // onMouseDown={() => revise(six)}
-            // onMouseUp={() => stop()}
-            onTouchStart={() => {
-              revise(six);
-            }}
-            onTouchEnd={() => {
-              stop();
-            }}
-            style={{
-              width: buttonSize,
-              height: buttonSize,
-              position: "absolute",
-              top: 200 + offsetRight_top,
-              right: 30 + offsetRight_right,
-              background: "honeydew",
-              borderRadius: "50%",
-              userSelect: "none",
-            }}
+            // {...{ [end]: () => handleSendMessage("end") }}
           >
-            {/* <IconButton size="large">
-              <StopCircleRoundedIcon fontSize="inherit" />
-            </IconButton> */}
-          </button>
+            升/降
+          </Button>
+          <Button
+            sx={rightButtonStyle}
+            variant="outlined"
+            size="large"
+            fullWidth={true}
+            {...{
+              [start]: () => {
+                handleSendMessage(Pitching);
+                setCount(10);
+              },
+            }}
+            // {...{ [end]: () => handleSendMessage("end") }}
+          >
+            夹球
+          </Button>
         </Box>
       </Box>
     </>
   );
 }
 
+const rightButtonStyle = {
+  userSelect: "none",
+  mt: 4,
+  mb: 4,
+  // with: 200,
+  fullWidth: true,
+  height: 50,
+};
+
 export default Car;
-
-const button = {
-  height: "80vh",
-  width: "100%",
-  justifyContent: "space-between",
-  display: "flex",
-  background: "dimgrey",
-};
-
-const button_left = {
-  position: "relative",
-};
-
-const button_right = {
-  position: "relative",
-};
-
-const offsetLeft_bottom = 20;
-const offsetLeft_left = 45;
-
-const offsetRight_top = -100;
-const offsetRight_right = 10;
-
-const buttonSize = "70px";

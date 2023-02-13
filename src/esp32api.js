@@ -1,7 +1,9 @@
+// 请求 Request
+
 // export const url = "wss://yinxi:gndp3106@mqtt.longan.link:8084/mqtt";
 export const url = "wss://junyan:elite_392101@mqtt.longan.link:8084/mqtt";
 export const LonganCore1 = {
-  passage: "junyan",
+  passage: "junyan1",
   message: {
     Up: "Up",
     Down: "Down",

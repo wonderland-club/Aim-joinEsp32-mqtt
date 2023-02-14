@@ -47,6 +47,8 @@ function Car(props) {
     const timer = setInterval(() => {
       setCount((c) => c - 1);
     }, 1000);
+    console.log(count);
+    
     if (count == 0) {
       navigate("/");
     }

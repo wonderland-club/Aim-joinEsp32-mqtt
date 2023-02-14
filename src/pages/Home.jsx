@@ -58,6 +58,7 @@ const Home = () => {
   const [open, setOpen] = React.useState(false); // 控制 提示的开关
   const [transition, setTransition] = React.useState(undefined); //过度动画
 
+  let isClick = false;
   // const [Machines, setMachines] = useState(""); //设备状态
   let Machines = "";
   const machinesArr = ["该机器被使用中,请稍后再试...", "该机器没电了..."];
@@ -91,8 +92,10 @@ const Home = () => {
     client.subscribe(topic, (err) => {
       if (!err) {
         client.publish(topic, "Request");
+        isClick = true;
         // 如果倒计时结束，无回应将会判定该设备没电
         time = setTimeout(() => {
+          isClick = false;
           BackgroundClose();
           Machines = machinesArr[1];
           handleClick(TransitionDown);
@@ -106,19 +109,22 @@ const Home = () => {
   // 收到的消息
   const handleReceiveMessage = (topic, message) => {
     const str = message.toString();
-
-    if (str == "Ok") {
-      BackgroundClose();
-      clearTimeout(time);
-      set_outer_to_((preState) => {
-        navigate(preState);
-        return preState;
-      });
-    } else if (str == "Error") {
-      BackgroundClose();
-      clearTimeout(time);
-      Machines = machinesArr[0];
-      handleClick(TransitionDown);
+    if (isClick == true) {
+      if (str == "Ok") {
+        BackgroundClose();
+        clearTimeout(time);
+        set_outer_to_((preState) => {
+          navigate(preState);
+          return preState;
+        });
+        isClick = false;
+      } else if (str == "Error") {
+        BackgroundClose();
+        clearTimeout(time);
+        Machines = machinesArr[0];
+        handleClick(TransitionDown);
+        isClick = false;
+      }
     }
   };
 

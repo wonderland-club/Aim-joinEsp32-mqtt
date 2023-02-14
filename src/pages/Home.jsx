@@ -89,10 +89,11 @@ const Home = () => {
   // 点击订阅主题
   const handleSubscribe = (topic) => {
     BackgroundDisplay();
+    isClick = true;
+
     client.subscribe(topic, (err) => {
       if (!err) {
         client.publish(topic, "Request");
-        isClick = true;
         // 如果倒计时结束，无回应将会判定该设备没电
         time = setTimeout(() => {
           isClick = false;

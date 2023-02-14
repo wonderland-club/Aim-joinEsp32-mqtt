@@ -21,41 +21,37 @@ import {
 } from "./route-constants";
 
 const style = {
+  borderRadius: "22px",
   position: "absolute",
   top: "50%",
   left: "50%",
   transform: "translate(-50%, -50%)",
-  width: "80%",
+  width: "70%",
   bgcolor: "background.paper",
-  border: "2px solid #000",
   boxShadow: 24,
   p: 4,
 };
 
 function App() {
-  //方案1 检测屏幕的宽度和高度，来判断屏幕方向
-  // const screenWidth = window.screen.width;
-  // const screenHeight = window.screen.height;
-
-  // if (screenWidth > screenHeight) {
-  //   console.log("横屏");
-  // } else {
-  //   console.log("竖屏");
-  // }
-
   const [open, setOpen] = React.useState(true);
 
   useEffect(() => {
+    //检测屏幕的宽度和高度，来判断屏幕方向
     const handleOpen = () => setOpen(true);
     const handleClose = () => setOpen(false);
 
     const handleOrientationChange = () => {
-      if (window.screen.width > window.screen.height) {
-        console.log("横向");
+      if (
+        window.screen.orientation.type === "landscape-primary" ||
+        window.screen.orientation.type === "landscape-secondary" ||
+        window.screen.orientation.angle === 90 ||
+        window.screen.orientation.angle === -90
+      ) {
         handleClose();
+        console.log("Landscape");
       } else {
-        console.log("竖向");
         handleOpen();
+        console.log("Portrait");
       }
     };
 
@@ -72,13 +68,15 @@ function App() {
         open={open}
         aria-labelledby="modal-modal-title"
         aria-describedby="modal-modal-description"
+        disableAutoFocus={true}
+        sx={{ borderRadius: "22px", background: "lightcoral" }}
       >
         <Box sx={style}>
           <Typography id="modal-modal-title" variant="h6" component="h2">
-            屏幕没有横向展示
+            屏幕应横向展示
           </Typography>
           <Typography id="modal-modal-description" sx={{ mt: 2 }}>
-            请在控制中心，设置屏幕为旋转模式
+            请在控制中心，设置屏幕为旋转模式，并横向转动，即刻体验
           </Typography>
         </Box>
       </Modal>

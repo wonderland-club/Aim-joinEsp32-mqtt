@@ -84,16 +84,15 @@ const Home = () => {
   const handleReceiveMessage = (topic, message) => {
     if (message.toString() == "ok") {
       // !!!!!
-      // navigate(router_to_);
       console.log("router_to_", router_to_);
+      // navigate(router_to_);
+
       // set_outer_to_((preState) => {
       //   navigate(preState);
       // });
     } else if (message.toString() == "error") {
       console.log("error");
       handleClick(TransitionDown);
-      // setOpen(true);
-      // setTransition(() => TransitionDown);
     }
   };
 

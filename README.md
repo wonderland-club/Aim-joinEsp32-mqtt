@@ -2,7 +2,7 @@
 
 
 
-## package.json 注意！！！
+## package.json ！！！
 
 ```json
 "dependencies": {
@@ -10,14 +10,22 @@
 }
 ```
 
-## Node 
-```bash
-//使用vnm 将node版本切换到
-node v16.13.0
+
+
+## Node！！！
+
+```basic
+//使用 nvm 管理 node 版本，将 node 版本切换到 v16.13.0
+
+// 下载 v16.13.0
+nvm install v16.13.0
+// 使用该版本
+nvm use v16.13.0
 ```
 
 
-## 下载
+
+## Install
 
 ```bash
 npm install
@@ -25,7 +33,7 @@ npm install
 
 
 
-## 启动
+## start
 
 ```bash
 npm start

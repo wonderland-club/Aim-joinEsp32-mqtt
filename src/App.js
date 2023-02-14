@@ -34,7 +34,6 @@ const style = {
 
 function App() {
   const [open, setOpen] = React.useState(true);
-
   useEffect(() => {
     //检测屏幕的宽度和高度，来判断屏幕方向
     const handleOpen = () => setOpen(true);

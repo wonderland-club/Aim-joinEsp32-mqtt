@@ -4,10 +4,12 @@ import Box from "@mui/material/Box";
 import Grid from "@mui/material/Unstable_Grid2";
 import DirectionsCarRoundedIcon from "@mui/icons-material/DirectionsCarRounded";
 import { url } from "../esp32api";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import mqtt from "mqtt";
 import Snackbar from "@mui/material/Snackbar";
 import Slide from "@mui/material/Slide";
+import Backdrop from "@mui/material/Backdrop";
+import CircularProgress from "@mui/material/CircularProgress";
 
 import {
   First_car_router,
@@ -42,15 +44,26 @@ const routerLink = [
 const Home = () => {
   const navigate = useNavigate();
 
+  const [openBackground, setOpenBackground] = React.useState(false);
+  const BackgroundClose = () => {
+    setOpenBackground(false);
+  };
+  const BackgroundDisplay = () => {
+    setOpenBackground(true);
+  };
+
   const [client, setClient] = useState(null);
-  const [selectedTopic, setSelectedTopic] = useState(null);
   const [router_to_, set_outer_to_] = useState("");
 
   const [open, setOpen] = React.useState(false); // 控制 提示的开关
   const [transition, setTransition] = React.useState(undefined); //过度动画
 
+  // const [Machines, setMachines] = useState(""); //设备状态
+  let Machines = "";
+  const machinesArr = ["该机器被使用中,请稍后再试...", "该机器没电了..."];
+
   const TransitionDown = (value) => {
-    return <Slide {...value} direction="down" message="该机器被使用中" />;
+    return <Slide {...value} direction="down" message={Machines} />;
   };
 
   // 打开提示
@@ -58,6 +71,7 @@ const Home = () => {
     setOpen(true);
     setTransition(() => Transition);
   };
+
   // 关闭提示
   const handleClose = () => {
     setOpen(false);
@@ -69,12 +83,21 @@ const Home = () => {
     setClient(newClient);
   }, []);
 
+  let time = null;
+
   // 点击订阅主题
   const handleSubscribe = (topic) => {
+    BackgroundDisplay();
     client.subscribe(topic, (err) => {
       if (!err) {
         client.publish(topic, "Request");
-        setSelectedTopic(topic);
+        // 如果倒计时结束，无回应将会判定该设备没电
+        time = setTimeout(() => {
+          BackgroundClose();
+          Machines = machinesArr[1];
+          handleClick(TransitionDown);
+        }, 5000);
+
         console.log(`Subscribed to ${topic}`);
       }
     });
@@ -82,16 +105,19 @@ const Home = () => {
 
   // 收到的消息
   const handleReceiveMessage = (topic, message) => {
-    if (message.toString() == "ok") {
-      // !!!!!
-      console.log("router_to_", router_to_);
-      // navigate(router_to_);
+    const str = message.toString();
 
-      // set_outer_to_((preState) => {
-      //   navigate(preState);
-      // });
-    } else if (message.toString() == "error") {
-      console.log("error");
+    if (str == "Ok") {
+      BackgroundClose();
+      clearTimeout(time);
+      set_outer_to_((preState) => {
+        navigate(preState);
+        return preState;
+      });
+    } else if (str == "Error") {
+      BackgroundClose();
+      clearTimeout(time);
+      Machines = machinesArr[0];
       handleClick(TransitionDown);
     }
   };
@@ -114,6 +140,14 @@ const Home = () => {
           <h1>Elite ESP32 Car</h1>
           <h3>{router_to_}</h3>
         </Box>
+        {/* 等待 背景  */}
+        <Backdrop
+          sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
+          open={openBackground}
+        >
+          <CircularProgress color="inherit" />
+        </Backdrop>
+        {/* 消息弹出提示框 */}
         <Snackbar
           open={open}
           onClose={handleClose}
@@ -121,6 +155,7 @@ const Home = () => {
           message="I love snacks"
           key={transition ? transition.name : ""}
         />
+        {/* 选择车辆 */}
         <Grid sx={{ width: "60%" }} container>
           {routerLink.map((item, index) => {
             return (

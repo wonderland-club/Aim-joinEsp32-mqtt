@@ -34,18 +34,14 @@ const style = {
 
 function App() {
   const [open, setOpen] = React.useState(true);
+  const b = window.matchMedia("(orientation: landscape)").matches + "";
   useEffect(() => {
     //检测屏幕的宽度和高度，来判断屏幕方向
     const handleOpen = () => setOpen(true);
     const handleClose = () => setOpen(false);
 
     const handleOrientationChange = () => {
-      if (
-        window.screen.orientation.type === "landscape-primary" ||
-        window.screen.orientation.type === "landscape-secondary" ||
-        window.screen.orientation.angle === 90 ||
-        window.screen.orientation.angle === -90
-      ) {
+      if (window.matchMedia("(orientation: landscape)").matches) {
         handleClose();
         console.log("Landscape");
       } else {

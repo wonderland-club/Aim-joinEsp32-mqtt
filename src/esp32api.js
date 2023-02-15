@@ -16,7 +16,7 @@ export const LonganCore1 = {
 };
 
 export const LonganCore2 = {
-  passage: "LonganCore1",
+  passage: "LonganCore2",
   message: {
     Up: "Up",
     Down: "Down",

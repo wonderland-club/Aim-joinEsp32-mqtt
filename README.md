@@ -38,3 +38,11 @@ npm install
 ```bash
 npm start
 ```
+
+
+
+## Esp32 MQTT 代码
+
+位置： ./mqtt_ESP32.sb3
+
+编辑器： https://addon.codelab.club/editor.html

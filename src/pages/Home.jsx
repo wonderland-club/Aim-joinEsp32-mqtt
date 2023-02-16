@@ -178,7 +178,7 @@ const Home = () => {
                         flexDirection: "column",
                         alignItems: "center",
                         justifyContent: "center",
-                        height: "calc(41vh - 67.5px)",
+                        height: "40vh",
                       }}
                     >
                       <Box>

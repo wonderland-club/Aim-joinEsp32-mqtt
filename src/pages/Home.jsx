@@ -145,9 +145,9 @@ const Home = () => {
 
   return (
     <>
-      <Box sx={{height:"calc(100vh - 36.5px)"}}>
+      <Box sx={{ height: "calc(100vh - 36.5px)" }}>
         <Grid container>
-          <Grid sx={{ height: 100 }} xs={12} sm={5}>
+          <Grid sx={{ height: 80 }} xs={12} sm={5}>
             <h1>Elite ESP32 Car</h1>
           </Grid>
 
@@ -178,15 +178,14 @@ const Home = () => {
                         flexDirection: "column",
                         alignItems: "center",
                         justifyContent: "center",
-                        height: 110,
+                        height: "calc(41vh - 67.5px)",
                       }}
                     >
                       <Box>
                         <DirectionsCarRoundedIcon sx={{ fontSize: 40 }} />
                       </Box>
                       <Box>
-                        {item}:
-                        {index + 1}
+                        {item}:{index + 1}
                       </Box>
                     </Box>
                   </Grid>

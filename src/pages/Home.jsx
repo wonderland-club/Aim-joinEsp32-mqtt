@@ -24,7 +24,6 @@ import {
   LonganCore3,
   LonganCore4,
 } from "../esp32api";
-import { height } from "@mui/system";
 
 // 主题
 const passage = [
@@ -48,6 +47,7 @@ let isClick = false;
 const Home = () => {
   const navigate = useNavigate();
 
+  // 等待设备响应
   const [openBackground, setOpenBackground] = React.useState(false);
   const BackgroundClose = () => {
     setOpenBackground(false);
@@ -69,13 +69,13 @@ const Home = () => {
     return <Slide {...value} direction="down" message={Machines} />;
   };
 
-  // 打开提示
+  // 设备异常提示
   const handleClick = (Transition) => {
     setOpen(true);
     setTransition(() => Transition);
   };
 
-  // 关闭提示
+  // 设备异常提示
   const handleClose = () => {
     setOpen(false);
   };
@@ -102,7 +102,7 @@ const Home = () => {
           BackgroundClose();
           Machines = machinesArr[1];
           handleClick(TransitionDown);
-        }, 5000);
+        }, 4000);
       }
     });
   };

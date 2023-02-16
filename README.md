@@ -1,8 +1,8 @@
-# React
+# React + MQTT + ESP32 Car
 
 
 
-## package.json ！！！
+## package.json
 
 ```json
 "dependencies": {
@@ -12,10 +12,10 @@
 
 
 
-## Node！！！
+## Node
 
 ```basic
-//使用 nvm 管理 node 版本，将 node 版本切换到 v16.13.0
+//使用 nvm 管理 node 版本，将 node 版本切换到 v16.13.0 可运行此项目
 
 // 下载 v16.13.0
 nvm install v16.13.0
@@ -43,6 +43,14 @@ npm start
 
 ## Esp32 MQTT 代码
 
-位置： ./mqtt_ESP32.sb3
+位置： ./mqtt.sb3
 
-编辑器： https://addon.codelab.club/editor.html
+Codelab 编程平台： https://addon.codelab.club/editor.html
+
+
+
+## MQTT Car 代码
+
+位置：./MQTT car.ubp
+
+Elite硬件编程平台：https://blocks.aimaker.space

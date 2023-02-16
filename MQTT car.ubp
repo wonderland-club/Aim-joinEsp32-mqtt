@@ -1,0 +1,1258 @@
+module main
+author wwj718
+version 1 0 
+description ''
+variables event lift switch control time 
+
+  spec ' ' '前进' '前进'
+  spec ' ' '右转' '右转'
+  spec ' ' '后退' '后退'
+  spec ' ' '左转' '左转'
+  spec ' ' '升降' '升降'
+  spec ' ' '开关' '开关'
+  spec ' ' '舵机初始化' '舵机初始化'
+
+to '前进' {
+  resetTimer
+  if (control == (booleanConstant true)) {
+    'MQTT pub' 'LonganCore1' 'Error'
+    control = 0
+    time = (booleanConstant true)
+  }
+  time = (booleanConstant false)
+  '设置电机' 'M1' 50
+  '设置电机' 'M2' 50
+}
+
+to '升降' {
+  resetTimer
+  if (control == (booleanConstant true)) {
+    'MQTT pub' 'LonganCore1' 'Error'
+    control = 0
+    time = (booleanConstant true)
+  }
+  time = (booleanConstant false)
+  if (lift == 0) {
+    '设置舵机' 180 'S1' 145
+    waitUntil (('MQTT event payload' event) == 'Lifting')
+    lift = 1
+  } else {
+    '设置舵机' 180 'S1' 180
+    waitUntil (('MQTT event payload' event) == 'Lifting')
+    lift = 0
+  }
+}
+
+to '右转' {
+  resetTimer
+  if control {
+    'MQTT pub' 'LonganCore1' 'Error'
+    control = 0
+    time = (booleanConstant true)
+  }
+  time = (booleanConstant false)
+  '设置电机' 'M1' 10
+  '设置电机' 'M2' -10
+}
+
+to '后退' {
+  resetTimer
+  if (control == (booleanConstant true)) {
+    'MQTT pub' 'LonganCore1' 'Error'
+    control = 0
+    time = (booleanConstant true)
+  }
+  time = (booleanConstant false)
+  '设置电机' 'M1' -50
+  '设置电机' 'M2' -50
+}
+
+to '左转' {
+  resetTimer
+  if else {
+    'MQTT pub' (control == (booleanConstant true)) 'Error'
+    control = 0
+    time = (booleanConstant true)
+  }
+  time = (booleanConstant false)
+  '设置电机' 'M1' -10
+  '设置电机' 'M2' 10
+}
+
+to '开关' {
+  resetTimer
+  if (control == (booleanConstant true)) {
+    'MQTT pub' 'LonganCore1' 'Error'
+    control = 0
+    time = (booleanConstant true)
+  }
+  time = (booleanConstant false)
+  if (switch == 0) {
+    '设置舵机' 180 'S2' 109
+    waitUntil (('MQTT event payload' event) == 'Pitching')
+    switch = 1
+  } else {
+    '设置舵机' 180 'S2' 90
+    waitUntil (('MQTT event payload' event) == 'Pitching')
+    switch = 0
+  }
+}
+
+to '舵机初始化' {
+  '设置舵机' 180 'S1' 180
+  '设置舵机' 180 'S2' 90
+}
+
+script 38 38 {
+whenStarted
+resetTimer
+comment '1. connect wifi'
+lift = 0
+switch = 0
+time = (booleanConstant true)
+control = (booleanConstant true)
+'舵机初始化'
+'LED 彩虹灯环连接到' 'H4'
+if ((getIPAddress) == '0.0.0.0') {
+  '设置所有 LED 彩虹灯环的颜色为' '全彩 LED 灯' (colorSwatch 190 4 24 255)
+  wifiConnect 'Elite_1006' '20130530'
+}
+waitMillis 1000
+'设置所有 LED 彩虹灯环的颜色为' '全彩 LED 灯' (colorSwatch 17 40 190 255)
+comment '2. connect MQTT broker'
+'MQTT connect to' 'mqtt.longan.link' 128 '' 'yinxi' 'gndp3106'
+comment 'subscribe topic'
+'MQTT sub' 'LonganCore1'
+sendBroadcast 'go!'
+}
+
+script 543 573 (3 == 9)
+
+script 626 573 {
+'MQTT sub' 'LonganCore2'
+}
+
+script 489 631 {
+whenBroadcastReceived 'request'
+resetTimer
+waitUntil ((((timer) / 1000) % 10) >= 3)
+if (control == (booleanConstant true)) {
+  if (time == (booleanConstant false)) {
+    'MQTT pub' 'LonganCore1' 'Error'
+  } else {
+    'MQTT pub' 'LonganCore1' 'Ok'
+    sayIt 123
+  }
+} else {
+  'MQTT pub' 'LonganCore1' 'Error'
+}
+}
+
+script 212 892 {
+whenBroadcastReceived 'go!'
+comment 'receive mqtt message'
+forever {
+  if ('MQTT connected') {
+    event = ('MQTT last event')
+    if (isType event 'list') {
+      sayIt ('MQTT event payload' event)
+      if (('MQTT event payload' event) == 'Request') {
+        sendBroadcast 'request'
+        control = (booleanConstant true)
+        time = (booleanConstant true)
+      }
+      if (('MQTT event payload' event) == 'Up') {
+        '前进'
+      }
+      if (('MQTT event payload' event) == 'Down') {
+        '后退'
+      }
+      if (('MQTT event payload' event) == 'Left') {
+        '左转'
+      }
+      if (('MQTT event payload' event) == 'Right') {
+        '右转'
+      }
+      if (('MQTT event payload' event) == 'Lifting') {
+        '升降'
+        'MQTT pub' 'LonganCore1' 'Error'
+      }
+      if (('MQTT event payload' event) == 'Pitching') {
+        '开关'
+        'MQTT pub' 'LonganCore1' 'Error'
+      }
+      if (('MQTT event payload' event) == 'Stop') {
+        '停止所有电机'
+        'MQTT pub' 'LonganCore1' 'Error'
+        control = 0
+      }
+    }
+  } else {
+    sayIt 'try to connect ...'
+    waitMillis 500
+    'MQTT connect to' 'mqtt.longan.link' 128 '' 'yinxi' 'gndp3106'
+  }
+}
+}
+
+script 545 2053 {
+to '后退' {}
+}
+
+script 108 2130 {
+to '升降' {}
+}
+
+script 438 2552 {
+to '开关' {}
+}
+
+script 105 2896 {
+to '前进' {}
+}
+
+script 38 3175 {
+to '左转' {}
+}
+
+script 38 3454 {
+to '右转' {}
+}
+
+
+module 'AIoT 智联未来-绿色星球'
+author '英荔教育'
+version 1 0 
+choices motorMenu M1 M2 
+choices servo_pinMenu S1 S2 
+choices channel1_stateMenu '0' '1' 
+choices expressionMenu '❌' '✔️' '🙂' '🙁' '😊' '❤️' '❣️' '❓' '🆗' 
+choices pinMenu H1 H2 H3 H4 
+choices servo_typeMenu '180' '270' '360' 
+choices channelMenu '1' '2' '3' '4' 
+choices TypeMenu '板载灯环' '全彩 LED 灯' 
+description ''
+variables _servoPulseWidth _servoPin _dhtData _dhtLastReadTime _dht_humidity _dht_temperature _np_pixels '_HT16K33 initialized' _HT16K33Buf _HT16K33_ADDR _Type _LED_pin _line_ADDR _line_threshold '_line initialized' '_Color initialized' '_Colorsensor ADDR' _wb_rgb _tonePin _toneInitalized _toneLoopOverhead _toneNoteNames _toneArezzoNotes _toneFrequencies 
+
+  spec ' ' '设置用户 LED' '设置用户 LED _' 'bool' true
+  spec 'r' '按键 A' '按键 A'
+  spec 'r' '按键 B' '按键 B'
+  spec 'r' '碰撞传感器' '碰撞传感器 _ 被按下' 'menu.pinMenu' 'H1'
+  spec 'r' '颜色传感器获取 色相值' '巡线 - 颜色传感器 IIC 接口 获取色相值'
+  spec 'r' '颜色传感器获取 颜色名' '巡线 - 颜色传感器 IIC 接口 获取颜色名'
+  spec ' ' '停止电机' '停止电机 _' 'menu.motorMenu' 'M1'
+  spec ' ' '停止所有电机' '停止所有电机'
+  spec ' ' '设置电机' '设置电机 _ 速度为 _ % (-100~100)' 'menu.motorMenu auto' 'M1' 0
+  spec ' ' '设置舵机' '设置 _ 舵机 _ 角度为 _' 'menu.servo_typeMenu menu.servo_pinMenu auto' 180 'S1' 0
+  spec ' ' 'LED 彩虹灯环连接到' '全彩 LED 灯连接到 _' 'menu.pinMenu' 'H1'
+  spec 'r' 'randomColor' 'random color'
+  spec 'r' '颜色 R' '颜色 R _ G _ B _ (0-255)' 'auto auto auto' 0 0 0
+  spec ' ' '关闭 LED 彩虹灯环' '关闭  _' 'menu.TypeMenu' '板载灯环'
+  spec ' ' '设置 LED 彩虹灯环' '设置 _ _ _ _ _ _ _ _ _' 'menu.TypeMenu color color color color color color color color' '板载灯环'
+  spec ' ' '设置第' '设置 _ 第 _ 个 LED 灯的颜色为 _' 'menu.TypeMenu auto color' '板载灯环' 1
+  spec ' ' '设置所有 LED 彩虹灯环的颜色为' '设置所有 _ 的颜色为 _' 'menu.TypeMenu color' '板载灯环'
+  spec ' ' 'set matrix clear' '点阵显示屏 IIC 接口清屏'
+  spec ' ' '点阵显示屏显示 emoji 表情' '点阵显示屏 IIC 接口显示 emoji 表情 _' 'menu.expressionMenu' '❌'
+  spec ' ' 'set matrix draw' '点阵显示屏 IIC 接口点亮 x _ y _ 点' 'num num' 0 0
+  spec ' ' '点阵显示屏清屏熄灭 x' '点阵显示屏 IIC 接口熄灭 x _ y _ 点' 'auto auto' 0 0
+  spec 'r' '四路灰度巡线传感器 通道' '四路灰度巡线传感器 通道 _ 巡线值' 'menu.channelMenu' 1
+  spec 'r' '四路' '四路灰度巡线传感器 通道 _ 遇到黑线' 'menu.channelMenu' 1
+  spec 'r' '四路灰度巡线传感器 识别到' '四路灰度巡线传感器 识别到 _ _ _ _' 'menu.channel1_stateMenu menu.channel1_stateMenu menu.channel1_stateMenu menu.channel1_stateMenu' 0 0 0 0
+  spec ' ' '无源蜂鸣器连接到' '无源蜂鸣器连接到 _' 'menu.pinMenu' 'H1'
+  spec ' ' 'play tone' 'play note _ octave _ for _ ms' 'auto num num' 'C' 0 500
+  spec ' ' 'playMIDIKey' 'play midi key _ for _ ms' 'num num' 60 500
+  spec ' ' 'play frequency' 'play frequency _ for _ ms' 'num num' 261 500
+  spec ' ' '_设置电机' '_设置电机 _ 的速度为 _' 'auto auto' 1 0
+  spec 'r' '_servoIndex' '_servoIndex _' 'num' 1
+  spec ' ' '_servoUpdateLoop' '_servoUpdateLoop'
+  spec ' ' '_servoPulse' '_servoPulse pin _ usecs _' 'num num' 1 1500
+  spec 'r' '_rescale' '_rescale _ from range ( _ , _ ) to ( _ , _ )' 'num num num num num' 0 0 0 0 0
+  spec ' ' '_NeoPixel_ensureInitialized' '_NeoPixel_ensureInitialized'
+  spec ' ' '_NeoPixel_update' '_NeoPixel_update'
+  spec ' ' '_HT16K33 setup' '_HT16K33 setup'
+  spec ' ' '_emoji 表情-OK' '_emoji 表情-OK _' 'auto' 'OK'
+  spec ' ' '_emoji 表情-伤心' '_emoji 表情-伤心 _' 'auto' '伤心'
+  spec ' ' '_emoji 表情-勾' '_emoji 表情-勾 _' 'auto' '勾'
+  spec ' ' '_emoji 表情-叉' '_emoji 表情-叉 _' 'auto' '叉'
+  spec ' ' '_emoji 表情-大心' '_emoji 表情-大心 _' 'auto' '大心'
+  spec ' ' '_emoji 表情-小心' '_emoji 表情-小心 _' 'auto' '小心'
+  spec ' ' '_emoji 表情-开心' '_emoji 表情-开心 _' 'auto' '开心'
+  spec ' ' '_emoji 表情-微笑' '_emoji 表情-微笑 _' 'auto' '微笑'
+  spec ' ' '_emoji 表情-问号' '_emoji 表情-问号 _' 'auto' '问号'
+  spec ' ' '_将' '_将 _ LED 彩虹灯连接至引脚 _ 具有白光 _' 'auto auto bool' 4 '' true
+  spec 'r' '_颜色传感器 RGB' '_颜色传感器 HSV'
+  spec ' ' '_line setup' '_line setup'
+  spec ' ' '_Colorsensor setup' '_Colorsensor setup'
+  spec ' ' '_Colorsensor_init' '_Colorsensor_init'
+  spec ' ' '_setbw_rgb' '_setbw_rgb _ _ _' 'auto auto auto' 0 0 0
+  spec 'r' '_measureLoopOverhead' '_measureLoopOverhead'
+  spec 'r' '_trimmedLowercase' '_trimmedLowercase _' 'str' 'A. b C...'
+  spec ' ' '_toneLoop' '_toneLoop _ for _ ms' 'num num' 440000 100
+  spec 'r' '_baseFreqForNote' '_baseFreqForNote _' 'auto' 'c'
+  spec 'r' '_baseFreqForSemitone' '_baseFreqForSemitone _' 'num' 0
+
+to 'LED 彩虹灯环连接到' pin {
+  _Type = '彩虹灯环'
+  pin = pin
+  if (pin == 'H1') {
+    local 'pin_3' 16
+    _LED_pin = pin_3
+  } (pin == 'H2') {
+    local 'pin_3' 17
+    _LED_pin = pin_3
+  } (pin == 'H3') {
+    local 'pin_3' 25
+    _LED_pin = pin_3
+  } (pin == 'H4') {
+    local 'pin_3' 23
+    _LED_pin = pin_3
+  }
+  '_将' 4 pin_3 false
+}
+
+to '_Colorsensor setup' {
+  i2cSet (v '_Colorsensor ADDR') (hexToInt '80') (hexToInt '03')
+  waitMillis 10
+  i2cSet (v '_Colorsensor ADDR') (hexToInt '81') (hexToInt 'D5')
+  i2cSet (v '_Colorsensor ADDR') (hexToInt '8F') (hexToInt '01')
+}
+
+to '_Colorsensor_init' {
+  if ((v '_Color initialized') == 0) {
+    '_Colorsensor ADDR' = (hexToInt '39')
+    _wb_rgb = ('[data:makeList]' 52 100 100)
+    i2cSet (hexToInt '12') (hexToInt '3') (hexToInt '00')
+    '_Colorsensor setup'
+    i2cSet (hexToInt '12') (hexToInt '3') (hexToInt '00')
+    '_Color initialized' = 1
+  } else {
+    '_Colorsensor ADDR' = (hexToInt '39')
+    _wb_rgb = ('[data:makeList]' 52 100 100)
+    i2cSet (hexToInt '12') (hexToInt '3') (hexToInt '00')
+    '_Colorsensor setup'
+    i2cSet (hexToInt '12') (hexToInt '3') (hexToInt '00')
+  }
+}
+
+to '_HT16K33 setup' {
+  if ((v '_HT16K33 initialized') == 0) {
+    comment '__initmodule'
+    _HT16K33_ADDR = (hexToInt '70')
+    _HT16K33Buf = (newList 17)
+    local 'HT16K33_BLINK_CMD' (hexToInt '80')
+    local 'HT16K33_BLINK_DISPLAYON' (hexToInt '01')
+    local 'HT16K33_CMD_BRIGHTNESS' (hexToInt 'e0')
+    '[sensors:i2cWrite]' _HT16K33_ADDR ('[data:asByteArray]' ('[data:makeList]' (hexToInt '21')))
+    '[sensors:i2cWrite]' _HT16K33_ADDR ('[data:asByteArray]' ('[data:makeList]' (HT16K33_BLINK_CMD | (HT16K33_BLINK_DISPLAYON | (0 << 1)))))
+    '[sensors:i2cWrite]' _HT16K33_ADDR ('[data:asByteArray]' ('[data:makeList]' (HT16K33_CMD_BRIGHTNESS | (hexToInt 'f'))))
+    '_HT16K33 initialized' = 1
+  } else {
+    local 'HT16K33_BLINK_CMD' (hexToInt '80')
+    local 'HT16K33_BLINK_DISPLAYON' (hexToInt '01')
+    local 'HT16K33_CMD_BRIGHTNESS' (hexToInt 'e0')
+    '[sensors:i2cWrite]' _HT16K33_ADDR ('[data:asByteArray]' ('[data:makeList]' (hexToInt '21')))
+    '[sensors:i2cWrite]' _HT16K33_ADDR ('[data:asByteArray]' ('[data:makeList]' (HT16K33_BLINK_CMD | (HT16K33_BLINK_DISPLAYON | (0 << 1)))))
+    '[sensors:i2cWrite]' _HT16K33_ADDR ('[data:asByteArray]' ('[data:makeList]' (HT16K33_CMD_BRIGHTNESS | (hexToInt 'f'))))
+  }
+}
+
+to '_NeoPixel_ensureInitialized' {
+  if (_Type == '彩虹灯环') {
+    '_将' 4 _LED_pin false
+  } (_Type == '板载灯环') {
+    '_将' 8 4 false
+  }
+}
+
+to '_NeoPixel_update' {
+  '[display:neoPixelSend]' _np_pixels
+  waitMicros 100
+}
+
+to '_baseFreqForNote' note {
+  comment 'Return the frequency for the given note in the middle-C octave
+scaled by 1000. For example, return 440000 (440Hz) for A.
+Note names may be upper or lower case. Note names
+may be followed by # for a sharp or b for a flat.'
+  local 'normalized note' ('_trimmedLowercase' note)
+  if (_toneNoteNames == 0) {
+    _toneNoteNames = ('[data:makeList]' 'c' 'c#' 'd' 'd#' 'e' 'f' 'f#' 'g' 'g#' 'a' 'a#' 'b' 'c_' 'db' 'd_' 'eb' 'e_' 'e#' 'f_' 'gb' 'g_' 'ab' 'a_' 'bb' 'b_' 'b#')
+    _toneArezzoNotes = ('[data:makeList]' 'do' 'do#' 're' 're#' 'mi' 'fa' 'fa#' 'sol' 'sol#' 'la' 'la#' 'si' 'do_' 'dob' 're_' 'reb' 'mi_' 'mi#' 'fa_' 'solb' 'sol_' 'lab' 'la_' 'sib' 'si_' 'si#')
+  }
+  if (('[data:find]' (v 'normalized note') _toneArezzoNotes) > 0) {
+    return ('_baseFreqForSemitone' ('[data:find]' (v 'normalized note') _toneArezzoNotes))
+  } else {
+    return ('_baseFreqForSemitone' ('[data:find]' (v 'normalized note') _toneNoteNames))
+  }
+}
+
+to '_baseFreqForSemitone' semitone {
+  if (_toneFrequencies == 0) {_toneFrequencies = ('[data:makeList]' 261626 277183 293665 311127 329628 349228 369994 391995 415305 440000 466164 493883 246942 277183 277183 311127 311127 349228 329628 369994 369994 415305 415305 466164 466164 523252)}
+  if (and (1 <= semitone) (semitone <= (size _toneFrequencies))) {
+    return (at semitone _toneFrequencies)
+  } else {
+    comment 'Bad note name; return 10 Hz'
+    return 10000
+  }
+}
+
+to '_emoji 表情-OK' expression {
+  local 'point_x' ('[data:makeList]')
+  local 'point_y' ('[data:makeList]')
+  if (expression == '🆗') {
+    '[data:addLast]' '0,1,2,4,7,0,2,4,6,0,2,4,5,0,2,4,5,0,2,4,6,0,1,2,4,7' point_x
+    '[data:addLast]' '1,1,1,1,1,2,2,2,2,3,3,3,3,4,4,4,4,5,5,5,5,6,6,6,6,6' point_y
+  }
+  for i ((size ('[data:split]' (at 1 point_x) ',')) - 0) {
+    'set matrix draw' (at i ('[data:split]' (at 1 point_x) ',')) (at i ('[data:split]' (at 1 point_y) ','))
+  }
+}
+
+to '_emoji 表情-伤心' expression {
+  local 'point_x' ('[data:makeList]')
+  local 'point_y' ('[data:makeList]')
+  if (expression == '🙁') {
+    '[data:addLast]' '1,2,5,6,2,3,4,5,1,6' point_x
+    '[data:addLast]' '1,1,1,1,4,4,4,4,5,5' point_y
+  }
+  for i ((size ('[data:split]' (at 1 point_x) ',')) - 0) {
+    'set matrix draw' (at i ('[data:split]' (at 1 point_x) ',')) (at i ('[data:split]' (at 1 point_y) ','))
+  }
+}
+
+to '_emoji 表情-勾' expression {
+  local 'point_x' ('[data:makeList]')
+  local 'point_y' ('[data:makeList]')
+  if (expression == '✔️') {
+    '[data:addLast]' '0,1,2,3,4,5,6,7' point_x
+    '[data:addLast]' '4,5,6,5,4,3,2,1' point_y
+  }
+  for i ((size ('[data:split]' (at 1 point_x) ',')) - 0) {
+    'set matrix draw' (at i ('[data:split]' (at 1 point_x) ',')) (at i ('[data:split]' (at 1 point_y) ','))
+  }
+}
+
+to '_emoji 表情-叉' expression {
+  local 'point_x' ('[data:makeList]')
+  local 'point_y' ('[data:makeList]')
+  if (expression == '❌') {
+    '[data:addLast]' '0,7,1,6,2,5,3,4,3,4,2,5,1,6,0,7' point_x
+    '[data:addLast]' '0,0,1,1,2,2,3,3,4,4,5,5,6,6,7,7' point_y
+  }
+  for i ((size ('[data:split]' (at 1 point_x) ',')) - 0) {
+    'set matrix draw' (at i ('[data:split]' (at 1 point_x) ',')) (at i ('[data:split]' (at 1 point_y) ','))
+  }
+}
+
+to '_emoji 表情-大心' expression {
+  local 'point_x' ('[data:makeList]')
+  local 'point_y' ('[data:makeList]')
+  if (expression == '❤️') {
+    '[data:addLast]' '2,3,5,6,1,2,3,4,5,6,7,1,2,3,4,5,6,7,1,2,3,4,5,6,7,2,3,4,5,6,3,4,5,4' point_x
+    '[data:addLast]' '1,1,1,1,2,2,2,2,2,2,2,3,3,3,3,3,3,3,4,4,4,4,4,4,4,5,5,5,5,5,6,6,6,7' point_y
+  }
+  for i ((size ('[data:split]' (at 1 point_x) ',')) - 0) {
+    'set matrix draw' (at i ('[data:split]' (at 1 point_x) ',')) (at i ('[data:split]' (at 1 point_y) ','))
+  }
+}
+
+to '_emoji 表情-小心' expression {
+  local 'point_x' ('[data:makeList]')
+  local 'point_y' ('[data:makeList]')
+  if (expression == '❣️') {
+    '[data:addLast]' '3,5,2,3,4,5,6,2,3,4,5,6,3,4,5,4' point_x
+    '[data:addLast]' '2,2,3,3,3,3,3,4,4,4,4,4,5,5,5,6' point_y
+  }
+  for i ((size ('[data:split]' (at 1 point_x) ',')) - 0) {
+    'set matrix draw' (at i ('[data:split]' (at 1 point_x) ',')) (at i ('[data:split]' (at 1 point_y) ','))
+  }
+}
+
+to '_emoji 表情-开心' expression {
+  local 'point_x' ('[data:makeList]')
+  local 'point_y' ('[data:makeList]')
+  if (expression == '😊') {
+    '[data:addLast]' '1,6,0,2,5,7,0,7,1,6,2,3,4,5' point_x
+    '[data:addLast]' '1,1,2,2,2,2,4,4,5,5,6,6,6,6' point_y
+  }
+  for i ((size ('[data:split]' (at 1 point_x) ',')) - 0) {
+    'set matrix draw' (at i ('[data:split]' (at 1 point_x) ',')) (at i ('[data:split]' (at 1 point_y) ','))
+  }
+}
+
+to '_emoji 表情-微笑' expression {
+  local 'point_x' ('[data:makeList]')
+  local 'point_y' ('[data:makeList]')
+  if (expression == '🙂') {
+    '[data:addLast]' '1,2,5,6,0,7,1,6,2,3,4,5' point_x
+    '[data:addLast]' '1,1,1,1,4,4,5,5,6,6,6,6' point_y
+  }
+  for i ((size ('[data:split]' (at 1 point_x) ',')) - 0) {
+    'set matrix draw' (at i ('[data:split]' (at 1 point_x) ',')) (at i ('[data:split]' (at 1 point_y) ','))
+  }
+}
+
+to '_emoji 表情-问号' expression {
+  local 'point_x' ('[data:makeList]')
+  local 'point_y' ('[data:makeList]')
+  if (expression == '❓') {
+    '[data:addLast]' '3,4,5,2,6,2,6,5,4,4,4' point_x
+    '[data:addLast]' '0,0,0,1,1,2,2,3,4,5,7' point_y
+  }
+  for i ((size ('[data:split]' (at 1 point_x) ',')) - 0) {
+    'set matrix draw' (at i ('[data:split]' (at 1 point_x) ',')) (at i ('[data:split]' (at 1 point_y) ','))
+  }
+}
+
+to '_line setup' {
+  if ((v '_line initialized') == 0) {
+    _line_ADDR = (hexToInt '12')
+    _line_threshold = 100
+    '_line initialized' = 1
+  } else {
+    _line_ADDR = (hexToInt '12')
+    _line_threshold = 100
+  }
+}
+
+to '_measureLoopOverhead' {
+  comment 'Measure the loop overhead on this device'
+  local 'halfCycle' 100
+  local 'startT' (microsOp)
+  repeat 100 {
+    digitalWriteOp _tonePin false
+    waitMicros halfCycle
+    digitalWriteOp _tonePin false
+    waitMicros halfCycle
+  }
+  local 'usecs' ((microsOp) - startT)
+  return ((usecs - 20000) / 200)
+}
+
+to '_rescale' val in_min in_max out_min out_max {
+  return ((((val - in_min) * (out_max - out_min)) / (in_max - in_min)) + out_min)
+}
+
+to '_servoIndex' which {
+  if (_servoPin == 0) {
+    _servoPin = ('[data:makeList]')
+    _servoPulseWidth = ('[data:makeList]')
+    sendBroadcast '_servoUpdateLoop'
+  }
+  local 'i' ('[data:find]' which _servoPin)
+  if (i < 0) {
+    comment 'Add new pin'
+    '[data:addLast]' which _servoPin
+    '[data:addLast]' '1500' _servoPulseWidth
+    i = (size _servoPin)
+  }
+  return i
+}
+
+to '_servoPulse' pin usecs {
+  if (usecs == 0) {
+    comment 'Servo stopped; do nothing'
+    return 0
+  }
+  usecs = (maximum 0 (minimum usecs 1023))
+  comment 'Split wait into a long wait followed by a wait of <= 30 usecs for greater accuracy'
+  local 'endTime' ((microsOp) + usecs)
+  digitalWriteOp pin true
+  waitMicros (usecs - 30)
+  waitMicros (endTime - (microsOp))
+  digitalWriteOp pin false
+}
+
+to '_servoUpdateLoop' {
+  forever {
+    if (_servoPin != 0) {
+      comment 'If the _servoPin list is not 0, update the servos'
+      for i (size _servoPin) {
+        local 'pin' (at i _servoPin)
+        local 'usecs' (at i _servoPulseWidth)
+        if (and (pin >= 0) (usecs != 0)) {
+          '_servoPulse' pin usecs
+        }
+      }
+      waitMillis 15
+    }
+  }
+}
+
+to '_setbw_rgb' r g b {
+  _wb_rgb = ('[data:makeList]' r g b)
+}
+
+to '_toneLoop' scaledFreq ms {
+  if (_toneInitalized == 0) {'无源蜂鸣器连接到' 'H1'}
+  if ('[io:hasTone]') {
+    '[io:playTone]' _tonePin (scaledFreq / 1000)
+    waitMillis ms
+    '[io:playTone]' _tonePin 0
+  } else {
+    local 'halfCycle' ((500000000 / scaledFreq) - _toneLoopOverhead)
+    local 'cycles' ((ms * 500) / halfCycle)
+    repeat cycles {
+      digitalWriteOp _tonePin true
+      waitMicros halfCycle
+      digitalWriteOp _tonePin false
+      waitMicros halfCycle
+    }
+  }
+}
+
+to '_trimmedLowercase' s {
+  comment 'Return a copy of the given string without whitespace
+or periods and all lowercase.'
+  local 'result' (newList (size s))
+  '[data:delete]' 'all' result
+  for i (size s) {
+    local 'ch' ('[data:unicodeAt]' i s)
+    if (and (ch > 32) (ch != 46)) {
+      if (and (65 <= ch) (ch <= 90)) {ch = (ch + 32)}
+      '[data:addLast]' ch result
+    }
+  }
+  return ('[data:unicodeString]' result)
+}
+
+to '_将' number pinNumber optionalHasWhite {
+  hasWhite = false
+  if ((pushArgCount) > 2) {
+    hasWhite = optionalHasWhite
+  }
+  if (or (_np_pixels == 0) (number != (size _np_pixels))) {
+    _np_pixels = (newList number)
+  }
+  fillList _np_pixels 0
+  '[display:neoPixelSetPin]' pinNumber hasWhite
+}
+
+to '_设置电机' which speed {
+  if ((pushArgCount) > 2) {reversed = optionalReverse}
+  if (speed < 0) {speed = (0 - speed)}
+  local 'pulseWidth' ('_rescale' speed 0 100 50 1023)
+  if (speed == 0) {
+    pulseWidth = 0
+  }
+  if ('[io:hasServo]') {
+    analogWriteOp which pulseWidth
+  }
+}
+
+to '_颜色传感器 RGB' {
+  local 'rgb' ('颜色传感器获取 色相值')
+  local 'r' (((at 1 rgb) * 100) / 255)
+  local 'g' (((at 2 rgb) * 100) / 255)
+  local 'b' (((at 3 rgb) * 100) / 255)
+  local 'mx' (maximum r (maximum g b))
+  local 'mn' (minimum r (minimum g b))
+  local 'df' (mx - mn)
+  if (mx == mn) {
+    local 'h' 0
+  } (mx == r) {
+    local 'h' ((((60 * (((g - b) * 100) / df)) + (360 * 100)) / 100) % 360)
+  } (mx == g) {
+    local 'h' ((((60 * (((b - r) * 100) / df)) + (120 * 100)) / 100) % 360)
+  } (mx == b) {
+    local 'h' ((((60 * (((r - g) * 100) / df)) + (240 * 100)) / 100) % 360)
+  }
+  if (mx == 0) {
+    local 's' 0
+  } else {
+    local 's' (((df * 100) / mx) / 100)
+  }
+  local 'v' mx
+  return ('[data:makeList]' h s v)
+}
+
+to 'play frequency' freq ms {
+  '_toneLoop' (freq * 1000) ms
+}
+
+to 'play tone' note octave ms {
+  local 'freq' ('_baseFreqForNote' note)
+  if (freq <= 10000) {
+    waitMillis ms
+    return 0
+  }
+  if (octave < 0) {
+    repeat (absoluteValue octave) {
+      freq = (freq / 2)
+    }
+  }
+  repeat octave {
+    freq = (freq * 2)
+  }
+  '_toneLoop' freq ms
+}
+
+to playMIDIKey key ms {
+  local 'freq' ('_baseFreqForSemitone' ((key % 12) + 1))
+  local 'octave' ((key / 12) - 5)
+  if (octave < 0) {
+    repeat (absoluteValue octave) {
+      freq = (freq / 2)
+    }
+  }
+  repeat octave {
+    freq = (freq * 2)
+  }
+  '_toneLoop' freq ms
+}
+
+to randomColor {
+  local 'n1' (random 100 200)
+  local 'n2' (random 0 100)
+  if (1 == (random 1 3)) {
+    return ((n1 << 16) | (n2 << 8))
+  } (1 == (random 1 2)) {
+    return ((n2 << 16) | n1)
+  } else {
+    return ((n1 << 8) | n2)
+  }
+}
+
+to 'set matrix clear' {
+  '_HT16K33 setup'
+  _HT16K33Buf = (newList 17)
+  atPut 1 _HT16K33Buf 0
+  '[sensors:i2cWrite]' _HT16K33_ADDR ('[data:asByteArray]' _HT16K33Buf)
+}
+
+to 'set matrix draw' x y {
+  comment 'x 0-15
+
+y 0-7'
+  '_HT16K33 setup'
+  if (or (x < 0) (x > 15)) {
+    sayIt 'Error: x 0-15'
+    stopTask
+  }
+  if (or (y < 0) (y > 7)) {
+    sayIt 'Error: Y 0-7'
+    stopTask
+  }
+  local 'idx' ((y * 2) + (x / 8))
+  local 'tmp' (at (idx + 2) _HT16K33Buf)
+  tmp = (tmp | (1 << (x % 8)))
+  atPut (idx + 2) _HT16K33Buf tmp
+  atPut 1 _HT16K33Buf 0
+  '[sensors:i2cWrite]' _HT16K33_ADDR ('[data:asByteArray]' _HT16K33Buf)
+}
+
+to '停止所有电机' {
+  for i 2 {
+    '设置电机' ('[data:join]' 'M' i) 0
+  }
+}
+
+to '停止电机' motor {
+  '设置电机' motor 0
+}
+
+to '关闭 LED 彩虹灯环' Type {
+  if (Type == '彩虹灯环') {
+    _Type = Type
+    '_NeoPixel_ensureInitialized'
+    fillList _np_pixels 0
+    '_NeoPixel_update'
+  } else {
+    _Type = Type
+    '_NeoPixel_ensureInitialized'
+    fillList _np_pixels 0
+    '_NeoPixel_update'
+  }
+}
+
+to '四路' channel {
+  '_line setup'
+  if (('四路灰度巡线传感器 通道' channel) > _line_threshold) {
+    return (booleanConstant true)
+  } else {
+    return (booleanConstant false)
+  }
+}
+
+to '四路灰度巡线传感器 识别到' channel1_state channel2_state channel3_state channel4_state {
+  '_line setup'
+  if ((absoluteValue channel1_state) == 0) {
+    channel1_state = (('四路灰度巡线传感器 通道' 1) < _line_threshold)
+  } else {
+    channel1_state = (('四路灰度巡线传感器 通道' 1) > _line_threshold)
+  }
+  if ((absoluteValue channel2_state) == 0) {
+    channel2_state = (('四路灰度巡线传感器 通道' '2') < _line_threshold)
+  } else {
+    channel2_state = (('四路灰度巡线传感器 通道' '2') > _line_threshold)
+  }
+  if ((absoluteValue channel3_state) == 0) {
+    channel3_state = (('四路灰度巡线传感器 通道' '3') < _line_threshold)
+  } else {
+    channel3_state = (('四路灰度巡线传感器 通道' '3') > _line_threshold)
+  }
+  if ((absoluteValue channel4_state) == 0) {
+    channel4_state = (('四路灰度巡线传感器 通道' '4') < _line_threshold)
+  } else {
+    channel4_state = (('四路灰度巡线传感器 通道' '4') > _line_threshold)
+  }
+  return (and channel1_state (and channel2_state (and channel3_state channel4_state)))
+}
+
+to '四路灰度巡线传感器 通道' channel {
+  '_line setup'
+  local 'data' (newList 1)
+  '[sensors:i2cWrite]' _line_ADDR ('[data:asByteArray]' ('[data:makeList]' (33 + (channel - 1))))
+  '[sensors:i2cRead]' _line_ADDR data
+  waitMillis 1
+  return (at 1 data)
+}
+
+to '按键 A' {
+  if (digitalReadOp 34) {
+    return (booleanConstant false)
+  } else {
+    return (booleanConstant true)
+  }
+}
+
+to '按键 B' {
+  if (digitalReadOp 35) {
+    return (booleanConstant false)
+  } else {
+    return (booleanConstant true)
+  }
+}
+
+to '无源蜂鸣器连接到' pin {
+  local 'pin_3' 0
+  if (pin == 'H1') {
+    local 'pin_3' 16
+  } (pin == 'H2') {
+    local 'pin_3' 17
+  } (pin == 'H3') {
+    local 'pin_3' 25
+  } (pin == 'H4') {
+    local 'pin_3' 23
+  }
+  _tonePin = pin_3
+  _toneLoopOverhead = ('_measureLoopOverhead')
+  _toneInitalized = (booleanConstant true)
+}
+
+to '点阵显示屏显示 emoji 表情' expression {
+  'set matrix clear'
+  if (expression == '❌') {
+    '_emoji 表情-叉' expression
+  } (expression == '✔️') {
+    '_emoji 表情-勾' expression
+  } (expression == '🙂') {
+    '_emoji 表情-微笑' expression
+  } (expression == '🙁') {
+    '_emoji 表情-伤心' expression
+  } (expression == '😊') {
+    '_emoji 表情-开心' expression
+  } (expression == '❤️') {
+    '_emoji 表情-大心' expression
+  } (expression == '❣️') {
+    '_emoji 表情-小心' expression
+  } (expression == '❓') {
+    '_emoji 表情-问号' expression
+  } (expression == '🆗') {
+    '_emoji 表情-OK' expression
+  }
+}
+
+to '点阵显示屏清屏熄灭 x' x y {
+  comment 'x 0-15
+
+y 0-7'
+  '_HT16K33 setup'
+  if (or (x < 0) (x > 15)) {
+    sayIt 'Error: x 0-15'
+    stopTask
+  }
+  if (or (y < 0) (y > 7)) {
+    sayIt 'Error: Y 0-7'
+    stopTask
+  }
+  local 'idx' ((y * 2) + (x / 8))
+  local 'tmp' (at (idx + 2) _HT16K33Buf)
+  tmp = (tmp | (1 << (x % 8)))
+  atPut (idx + 2) _HT16K33Buf 0
+  atPut 1 _HT16K33Buf 0
+  '[sensors:i2cWrite]' _HT16K33_ADDR ('[data:asByteArray]' _HT16K33Buf)
+}
+
+to '碰撞传感器' pin {
+  local 'pin_3' 0
+  if (pin == 'H1') {
+    local 'pin_3' 16
+  } (pin == 'H2') {
+    local 'pin_3' 17
+  } (pin == 'H3') {
+    local 'pin_3' 25
+  } (pin == 'H4') {
+    local 'pin_3' 23
+  }
+  if (digitalReadOp pin_3 true) {
+    return (booleanConstant false)
+  } else {
+    return (booleanConstant true)
+  }
+}
+
+to '设置 LED 彩虹灯环' Type c1 c2 c3 c4 c5 c6 c7 c8 {
+  if (Type == '彩虹灯环') {
+    _Type = Type
+    '_NeoPixel_ensureInitialized'
+    if ((size _np_pixels) >= 1) {
+      atPut 1 _np_pixels c1
+    }
+    if ((size _np_pixels) >= 2) {
+      atPut 2 _np_pixels c2
+    }
+    if ((size _np_pixels) >= 3) {
+      atPut 3 _np_pixels c3
+    }
+    if ((size _np_pixels) >= 4) {
+      atPut 4 _np_pixels c4
+    }
+    '_NeoPixel_update'
+  } else {
+    _Type = Type
+    '_NeoPixel_ensureInitialized'
+    if ((size _np_pixels) >= 1) {
+      atPut 1 _np_pixels c1
+    }
+    if ((size _np_pixels) >= 2) {
+      atPut 2 _np_pixels c2
+    }
+    if ((size _np_pixels) >= 3) {
+      atPut 3 _np_pixels c3
+    }
+    if ((size _np_pixels) >= 4) {
+      atPut 4 _np_pixels c4
+    }
+    if ((size _np_pixels) >= 5) {
+      atPut 5 _np_pixels c5
+    }
+    if ((size _np_pixels) >= 6) {
+      atPut 6 _np_pixels c6
+    }
+    if ((size _np_pixels) >= 7) {
+      atPut 7 _np_pixels c7
+    }
+    if ((size _np_pixels) >= 8) {
+      atPut 8 _np_pixels c8
+    }
+    '_NeoPixel_update'
+  }
+}
+
+to '设置所有 LED 彩虹灯环的颜色为' Type color {
+  if (Type == '彩虹灯环') {
+    _Type = Type
+    '_NeoPixel_ensureInitialized'
+    fillList _np_pixels color
+    '_NeoPixel_update'
+  } else {
+    _Type = Type
+    '_NeoPixel_ensureInitialized'
+    fillList _np_pixels color
+    '_NeoPixel_update'
+  }
+}
+
+to '设置用户 LED' State {
+  comment 'User LED -- IO15'
+  if State {
+    digitalWriteOp 26 true
+  } else {
+    digitalWriteOp 26 false
+  }
+}
+
+to '设置电机' motor speed {
+  if (or (speed < -100) (speed > 100)) {speed = 0}
+  if (motor == 'M1') {if (speed > 0) {
+    '_设置电机' 27 0
+    '_设置电机' 13 speed
+  } (speed < 0) {
+    '_设置电机' 13 0
+    '_设置电机' 27 speed
+  } (speed == 0) {
+    '_设置电机' 13 0
+    '_设置电机' 27 0
+  }}
+  if (motor == 'M2') {if (speed > 0) {
+    '_设置电机' 15 0
+    '_设置电机' 12 speed
+  } (speed < 0) {
+    '_设置电机' 12 0
+    '_设置电机' 15 speed
+  } (speed == 0) {
+    '_设置电机' 12 0
+    '_设置电机' 15 0
+  }}
+}
+
+to '设置第' Type i color {
+  if (Type == '彩虹灯环') {
+    _Type = Type
+    '_NeoPixel_ensureInitialized'
+    if (and (1 <= i) (i <= (size _np_pixels))) {
+      atPut i _np_pixels color
+      '_NeoPixel_update'
+    }
+  } else {
+    _Type = Type
+    '_NeoPixel_ensureInitialized'
+    if (and (1 <= i) (i <= (size _np_pixels))) {
+      atPut i _np_pixels color
+      '_NeoPixel_update'
+    }
+  }
+}
+
+to '设置舵机' servo_type servo_pin angle {
+  if (servo_pin == 'S1') {
+    servo_pin = 32
+    analogWriteOp servo_pin 0
+  } (servo_pin == 'S2') {
+    servo_pin = 33
+    analogWriteOp servo_pin 0
+  }
+  if (angle < 0) {
+    angle = (-1 * angle)
+  }
+  if (angle == 0) {
+    local 'pulseWidth' ('_rescale' (angle + 1) servo_type 0 2500 500)
+  } else {
+    local 'pulseWidth' ('_rescale' (angle - 1) servo_type 0 2500 500)
+  }
+  if ('[io:hasServo]') {
+    '[io:setServo]' servo_pin pulseWidth
+    waitMicros 10
+  } else {
+    atPut ('_servoIndex' (absoluteValue servo_pin)) _servoPulseWidth pulseWidth
+  }
+}
+
+to '颜色 R' r g b {
+  r = (maximum 0 (minimum r 255))
+  g = (maximum 0 (minimum g 255))
+  b = (maximum 0 (minimum b 255))
+  return (((r << 16) | (g << 8)) | b)
+}
+
+to '颜色传感器获取 色相值' {
+  '_Colorsensor_init'
+  local 'color' ('[data:makeList]')
+  local 'buf' (newList 6)
+  '[sensors:i2cWrite]' (v '_Colorsensor ADDR') (hexToInt '96')
+  '[sensors:i2cRead]' (v '_Colorsensor ADDR') buf
+  local 'r' (((at 2 buf) * 256) + (at 1 buf))
+  local 'g' (((at 4 buf) * 256) + (at 3 buf))
+  local 'b' (((at 6 buf) * 256) + (at 5 buf))
+  waitMicros 10
+  local 'r' (r / (at 1 _wb_rgb))
+  local 'g' ((g * 1) / (at 2 _wb_rgb))
+  local 'b' ((b * 1) / (at 3 _wb_rgb))
+  local 'maxcolor' (maximum r (maximum g b))
+  if ((maxcolor * 100) > 255) {
+    local 'scale' (25500 / maxcolor)
+    local 'r' ((r * scale) / 100)
+    local 'g' ((g * scale) / 100)
+    local 'b' ((b * scale) / 200)
+  }
+  '[data:addLast]' r color
+  '[data:addLast]' g color
+  '[data:addLast]' b color
+  return color
+}
+
+to '颜色传感器获取 颜色名' {
+  local 'hsv' (at 1 ('_颜色传感器 RGB'))
+  if (hsv == 0) {
+    return '无颜色'
+  } (and (0 < hsv) (hsv <= 6)) {
+    return '红色'
+  } (and (6 < hsv) (hsv <= 25)) {
+    return '橙色'
+  } (and (25 < hsv) (hsv <= 70)) {
+    return '黄色'
+  } (and (70 < hsv) (hsv <= 130)) {
+    return '绿色'
+  } (and (130 < hsv) (hsv <= 160)) {
+    return '青色'
+  } (and (160 < hsv) (hsv <= 250)) {
+    return '蓝色'
+  } (and (250 < hsv) (hsv <= 360)) {
+    return '紫色'
+  } else {
+    return '无颜色'
+  }
+}
+
+
+module MQTT Comm
+author wwj718
+version 1 4 
+depends WiFi 
+tags mqtt network 
+description 'A simple MQTT client.'
+
+  spec ' ' 'MQTT connect to' 'MQTT connect to broker _ : buffer sizes _ client id _ : username _ password _' 'str num str str str' '' 128 '' '' ''
+  spec 'r' 'MQTT connected' 'MQTT connected'
+  spec ' ' 'MQTT disconnect' 'MQTT disconnect'
+  spec ' ' 'MQTT sub' 'MQTT sub _ : QoS _' 'str num' 'testTopic' 0
+  spec ' ' 'MQTT unsub' 'MQTT unsub _' 'str' 'testTopic'
+  spec ' ' 'MQTT pub' 'MQTT pub topic _ payload _ : retain _ QoS _' 'str auto bool num' 'testTopic' 'Hello!' false 0
+  spec 'r' 'MQTT last event' 'MQTT event : binary _' 'bool' false
+  spec 'r' 'MQTT event topic' 'topic for MQTT event _' 'str' ''
+  spec 'r' 'MQTT event payload' 'payload for MQTT event _' 'str' ''
+
+to 'MQTT connect to' broker buffer_sizes client_id username password {
+  if ((getIPAddress) != '0.0.0.0') {
+    if ((pushArgCount) == 1) {
+      callCustomCommand '[net:MQTTConnect]' ('[data:makeList]' broker 128 'MicroBlocks_client')
+    } ((pushArgCount) == 3) {
+      callCustomCommand '[net:MQTTConnect]' ('[data:makeList]' broker buffer_sizes client_id)
+    } else {
+      callCustomCommand '[net:MQTTConnect]' ('[data:makeList]' broker buffer_sizes client_id username password)
+    }
+    if ('MQTT connected') {
+      sayIt 'Connected!'
+    } else {
+      sayIt 'Not Connected'
+    }
+  } else {
+    sayIt 'Not Connected'
+  }
+}
+
+to 'MQTT connected' {
+  return (callCustomReporter '[net:MQTTIsConnected]')
+}
+
+to 'MQTT disconnect' {
+  callCustomCommand '[net:MQTTdisconnect]'
+}
+
+to 'MQTT event payload' event {
+  if (and (isType event 'list') ((size event) > 1)) {
+    comment 'Join to empty string converts byte array to string'
+    return ('[data:join]' '' (at 2 event))
+  } else {
+    return ''
+  }
+}
+
+to 'MQTT event topic' event {
+  if (and (isType event 'list') ((size event) > 1)) {
+    return (at 1 event)
+  } else {
+    return ''
+  }
+}
+
+to 'MQTT last event' useBinary {
+  if ((pushArgCount) < 1) {
+    return (callCustomReporter '[net:MQTTLastEvent]')
+  } else {
+    return (callCustomReporter '[net:MQTTLastEvent]' ('[data:makeList]' binaryFlag))
+  }
+}
+
+to 'MQTT pub' topic payload retain qos {
+  if ((pushArgCount) < 4) {
+    okay = (callCustomReporter '[net:MQTTPub]' ('[data:makeList]' topic payload))
+  } else {
+    okay = (callCustomReporter '[net:MQTTPub]' ('[data:makeList]' topic payload retain qos))
+  }
+  if (not okay) {
+    sayIt 'pub failure!'
+  }
+}
+
+to 'MQTT sub' topic qos {
+  if ((pushArgCount) < 2) {
+    okay = (callCustomReporter '[net:MQTTSub]' ('[data:makeList]' topic))
+  } else {
+    okay = (callCustomReporter '[net:MQTTSub]' ('[data:makeList]' topic qos))
+  }
+  if (not okay) {
+    sayIt 'sub failure!'
+  }
+}
+
+to 'MQTT unsub' topic {
+  if ((callCustomReporter '[net:MQTTUnsub]' ('[data:makeList]' topic)) != (booleanConstant true)) {sayIt 'unsub failure!'}
+}
+
+
+module WiFi Comm
+author MicroBlocks
+version 1 5 
+tags communication network 
+description 'Connect to a WiFi network. Used in conjunction with other network libraries, such as HTTP client, HTTP server or Web Thing.
+'
+
+  spec ' ' 'wifiConnect' 'wifi connect to _ password _ : IP _ gateway _ subnet _' 'str str auto auto auto' 'Network_Name' '' '192.168.1.42' '192.168.1.1' '255.255.255.0'
+  spec ' ' 'wifiCreateHotspot' 'wifi create hotspot _ password _' 'str str' 'Network_Name' 'Network_Password'
+  spec 'r' 'getIPAddress' 'IP address'
+  spec 'r' '[net:myMAC]' 'MAC address'
+
+to getIPAddress {
+  return ('[net:myIPAddress]')
+}
+
+to wifiConnect ssid password fixedIP gatewayIP subnetIP {
+  if (not ('[net:hasWiFi]')) {return}
+  '[net:stopWiFi]'
+  if ((pushArgCount) < 5) {
+    '[net:startWiFi]' ssid password
+  } else {
+    '[net:startWiFi]' ssid password false fixedIP gatewayIP subnetIP
+  }
+  local 'startMSecs' (millisOp)
+  repeatUntil (('[net:myIPAddress]') != '0.0.0.0') {
+    comment 'Timeout after N seconds'
+    if (((millisOp) - startMSecs) > 10000) {
+      sayIt 'Could not connect'
+      return 0
+    }
+    comment 'Slow blink while trying to connect'
+    setUserLED true
+    waitMillis 300
+    setUserLED false
+    waitMillis 300
+  }
+  repeat 6 {
+    comment 'Quick blinks when connected'
+    setUserLED true
+    waitMillis 50
+    setUserLED false
+    waitMillis 50
+  }
+  sayIt 'My IP address is:' ('[net:myIPAddress]')
+}
+
+to wifiCreateHotspot ssid password {
+  if (not ('[net:hasWiFi]')) {return}
+  '[net:startWiFi]' ssid password true
+  if ('Connected' != ('[net:wifiStatus]')) {
+    sayIt 'Could not create hotspot'
+    return 0
+  }
+  repeat 6 {
+    comment 'Quick blinks when connected'
+    setUserLED true
+    waitMillis 50
+    setUserLED false
+    waitMillis 50
+  }
+  sayIt 'My IP address is:' ('[net:myIPAddress]')
+}
+

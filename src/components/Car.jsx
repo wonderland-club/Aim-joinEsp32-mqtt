@@ -8,6 +8,7 @@ import Button from "@mui/material/Button";
 import { useNavigate } from "react-router-dom";
 import Typography from "@mui/material/Typography";
 import Modal from "@mui/material/Modal";
+
 function Car(props) {
   // 横屏检测
   const [open, setOpen] = React.useState(true);
@@ -28,7 +29,6 @@ function Car(props) {
 
     var mql = window.matchMedia("(orientation: portrait)");
     const onMatchMeidaChange = () => {
-      console.log("执行");
       if (mql.matches) {
         handleOpen();
         // 竖屏
@@ -176,7 +176,7 @@ function Car(props) {
             }}
             // {...{ [end]: () => handleSendMessage("end") }}
           >
-            升/降
+            升 / 降
           </Button>
           <Button
             sx={rightButtonStyle}
@@ -191,7 +191,7 @@ function Car(props) {
             }}
             // {...{ [end]: () => handleSendMessage("end") }}
           >
-            夹球
+            夹球 / 松开
           </Button>
         </Box>
       </Box>

@@ -10,14 +10,8 @@ const Layout = ({ children }) => {
 
   return (
     <>
-      <Box sx={{ height: "10vh" }}>
-        <Button
-          onClick={() => {
-            navigate("/");
-          }}
-        >
-          AIM ESP32 HOME
-        </Button>
+      <Box>
+        <Button onClick={() => navigate("/")}>AIM ESP32 HOME</Button>
       </Box>
       {children}
     </>

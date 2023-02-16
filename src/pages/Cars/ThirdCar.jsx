@@ -5,8 +5,8 @@ import { LonganCore3 } from "../../esp32api";
 const ThirdCar = () => {
   return (
     <div>
-      ThirdCar
       <Car
+        trainNumber="ThirdCar"
         urlStr={url}
         passage={LonganCore3.passage}
         message={LonganCore3.message}

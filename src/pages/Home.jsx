@@ -10,7 +10,7 @@ import Snackbar from "@mui/material/Snackbar";
 import Slide from "@mui/material/Slide";
 import Backdrop from "@mui/material/Backdrop";
 import CircularProgress from "@mui/material/CircularProgress";
-
+import Zoom from "@mui/material/Zoom";
 import {
   First_car_router,
   Second_car_router,
@@ -24,6 +24,7 @@ import {
   LonganCore3,
   LonganCore4,
 } from "../esp32api";
+import { height } from "@mui/system";
 
 // 主题
 const passage = [
@@ -56,12 +57,11 @@ const Home = () => {
   };
 
   const [client, setClient] = useState(null);
-  const [router_to_, set_outer_to_] = useState("");
+  const [router_to_, set_router_to_] = useState("");
 
   const [open, setOpen] = React.useState(false); // 控制 提示的开关
   const [transition, setTransition] = React.useState(undefined); //过度动画
 
-  // const [Machines, setMachines] = useState(""); //设备状态
   let Machines = "";
   const machinesArr = ["该机器被使用中,请稍后再试...", "该机器没电了..."];
 
@@ -117,7 +117,7 @@ const Home = () => {
         clearTimeout(time);
         isClick = false;
         console.log("ok_isClick", isClick);
-        set_outer_to_((preState) => {
+        set_router_to_((preState) => {
           navigate(preState);
           return preState;
         });
@@ -145,57 +145,72 @@ const Home = () => {
 
   return (
     <>
-      <Box sx={contents}>
-        <Box>
-          <h1>Elite ESP32 Car</h1>
-          <h3>{router_to_}</h3>
-        </Box>
-        {/* 等待 背景  */}
-        <Backdrop
-          sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
-          open={openBackground}
-        >
-          <CircularProgress color="inherit" />
-        </Backdrop>
-        {/* 消息弹出提示框 */}
-        <Snackbar
-          open={open}
-          onClose={handleClose}
-          TransitionComponent={transition}
-          message="I love snacks"
-          key={transition ? transition.name : ""}
-        />
-        {/* 选择车辆 */}
-        <Grid sx={{ width: "60%" }} container>
-          {routerLink.map((item, index) => {
-            return (
-              <Grid
-                sx={{
-                  background: "lightcoral",
-                  borderRadius: "16px",
-                  margin: 1,
-                  display: "flex",
-                  alignContent: "center",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-                xs={5}
-                key={index}
-                onClick={() => {
-                  set_outer_to_(item);
-                  handleSubscribe(passage[index]);
-                }}
-              >
-                <Box>
-                  <DirectionsCarRoundedIcon sx={{ fontSize: 40 }} />
-                </Box>
-                <Box>{item}</Box>
-              </Grid>
-            );
-          })}
+      <Box sx={{height:"calc(100vh - 36.5px)"}}>
+        <Grid container>
+          <Grid sx={{ height: 100 }} xs={12} sm={5}>
+            <h1>Elite ESP32 Car</h1>
+          </Grid>
+
+          {/* 选择车辆 */}
+          <Grid container xs={12} sm={7}>
+            {routerLink.map((item, index) => {
+              return (
+                <Zoom
+                  key={index}
+                  in={true}
+                  style={{ transitionDelay: true ? index * 200 + "ms" : "0ms" }}
+                >
+                  <Grid
+                    xs={6}
+                    onClick={() => {
+                      set_router_to_(item);
+                      handleSubscribe(passage[index]);
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        transformOrigin: "0 0 0",
+                        background: "lightcoral",
+                        borderRadius: "16px",
+                        margin: 1,
+                        display: "flex",
+                        alignContent: "center",
+                        flexDirection: "column",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        height: 110,
+                      }}
+                    >
+                      <Box>
+                        <DirectionsCarRoundedIcon sx={{ fontSize: 40 }} />
+                      </Box>
+                      <Box>
+                        {item}:
+                        {index + 1}
+                      </Box>
+                    </Box>
+                  </Grid>
+                </Zoom>
+              );
+            })}
+          </Grid>
         </Grid>
       </Box>
+      {/* 等待 背景  */}
+      <Backdrop
+        sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
+        open={openBackground}
+      >
+        <CircularProgress color="inherit" />
+      </Backdrop>
+      {/* 消息弹出提示框 */}
+      <Snackbar
+        open={open}
+        onClose={handleClose}
+        TransitionComponent={transition}
+        message="I love snacks"
+        key={transition ? transition.name : ""}
+      />
     </>
   );
 };

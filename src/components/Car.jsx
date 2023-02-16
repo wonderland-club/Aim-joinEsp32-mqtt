@@ -6,7 +6,48 @@ import mqtt from "mqtt";
 import { Joystick } from "react-joystick-component";
 import Button from "@mui/material/Button";
 import { useNavigate } from "react-router-dom";
+import Typography from "@mui/material/Typography";
+import Modal from "@mui/material/Modal";
 function Car(props) {
+  // 横屏检测
+  const [open, setOpen] = React.useState(true);
+  useEffect(() => {
+    //检测屏幕的宽度和高度，来判断屏幕方向
+    const handleOpen = () => setOpen(true);
+    const handleClose = () => setOpen(false);
+
+    // const handleOrientationChange = () => {
+    //   if (window.matchMedia("(orientation: landscape)").matches) {
+    //     handleClose();
+    //     console.log("Landscape");
+    //   } else {
+    //     handleOpen();
+    //     console.log("Portrait");
+    //   }
+    // };
+
+    var mql = window.matchMedia("(orientation: portrait)");
+    const onMatchMeidaChange = () => {
+      console.log("执行");
+      if (mql.matches) {
+        handleOpen();
+        // 竖屏
+      } else {
+        handleClose();
+        // 横屏
+      }
+    };
+
+    onMatchMeidaChange();
+    mql.addListener(onMatchMeidaChange);
+
+    // window.addEventListener("orientationchange", handleOrientationChange);
+
+    // return () => {
+    //   window.removeEventListener("orientationchange", handleOrientationChange);
+    // };
+  }, []);
+
   // 通道 消息
   const { urlStr, passage } = props;
   const navigate = useNavigate();
@@ -47,9 +88,8 @@ function Car(props) {
     const timer = setInterval(() => {
       setCount((c) => c - 1);
     }, 1000);
-    // console.log(count);
-    
-    if (count == 0) {
+
+    if (count <= 0) {
       navigate("/");
     }
     return () => clearInterval(timer);
@@ -64,11 +104,12 @@ function Car(props) {
 
   const JoystickDirection = ["FORWARD", "BACKWARD", "LEFT", "RIGHT", "STOP"];
 
-  const [moveRecords, setMoveRecords] = useState("");
+  const [moveRecords, setMoveRecords] = useState(JoystickDirection[4]);
 
   const handleMove = (e) => {
     setCount(10);
     // 判断方向是否跟刚刚的方向相同
+    // console.log(e);
     const direction = e.direction;
     if (moveRecords !== direction) {
       if (direction == JoystickDirection[0]) {
@@ -87,15 +128,19 @@ function Car(props) {
     setMoveRecords(JoystickDirection[4]);
     handleSendMessage(Stop);
   };
-  const joystickStart = () => {};
+  const joystickStart = () => {
+    // console.log("start");
+  };
   return (
     <>
-      <button onClick={() => setCount(10)}>{count}</button>
-      <Box>{moveRecords}</Box>
+      <Box>
+        车号：{props.trainNumber}; 操纵杆方向：{moveRecords};剩余时间：{count}
+        秒;
+      </Box>
       <LinearProgress />
       <Box
         sx={{
-          height: "80vh",
+          height: "calc(100vh - 60px)",
           justifyContent: "space-around",
           display: "flex",
           alignContent: "center",
@@ -150,6 +195,22 @@ function Car(props) {
           </Button>
         </Box>
       </Box>
+      <Modal
+        open={open}
+        aria-labelledby="modal-modal-title"
+        aria-describedby="modal-modal-description"
+        disableAutoFocus={true}
+        sx={{ borderRadius: "22px", background: "lightcoral" }}
+      >
+        <Box sx={style}>
+          <Typography id="modal-modal-title" variant="h6" component="h2">
+            屏幕应横向展示
+          </Typography>
+          <Typography id="modal-modal-description" sx={{ mt: 2 }}>
+            请在控制中心，设置屏幕为旋转模式，并横向转动，即刻体验
+          </Typography>
+        </Box>
+      </Modal>
     </>
   );
 }
@@ -161,6 +222,18 @@ const rightButtonStyle = {
   // with: 200,
   fullWidth: true,
   height: 50,
+};
+
+const style = {
+  borderRadius: "22px",
+  position: "absolute",
+  top: "50%",
+  left: "50%",
+  transform: "translate(-50%, -50%)",
+  width: "70%",
+  bgcolor: "background.paper",
+  boxShadow: 24,
+  p: 4,
 };
 
 export default Car;

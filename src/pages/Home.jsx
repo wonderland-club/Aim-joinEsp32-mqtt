@@ -63,7 +63,7 @@ const Home = () => {
   const [transition, setTransition] = React.useState(undefined); //过度动画
 
   let Machines = "";
-  const machinesArr = ["该机器被使用中,请稍后再试...", "该机器没电了..."];
+  const machinesArr = ["该机器被使用中,请稍后再试...", "该机器电量不足..."];
 
   const TransitionDown = (value) => {
     return <Slide {...value} direction="down" message={Machines} />;
@@ -145,7 +145,7 @@ const Home = () => {
 
   return (
     <>
-      <Box sx={{ height: "calc(100vh - 36.5px)" }}>
+      <Box sx={{ height: "100vh", alignItems: "center", display: "flex" }}>
         <Grid container>
           <Grid sx={{ height: 80 }} xs={12} sm={5}>
             <h1>Elite ESP32 Car</h1>
@@ -215,9 +215,3 @@ const Home = () => {
 };
 
 export default Home;
-
-const contents = {
-  height: "80vh",
-  display: "flex",
-  justifyContent: "space-between",
-};

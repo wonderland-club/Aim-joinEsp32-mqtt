@@ -8,14 +8,7 @@ import Button from "@mui/material/Button";
 const Layout = ({ children }) => {
   const navigate = useNavigate();
 
-  return (
-    <>
-      <Box>
-        <Button onClick={() => navigate("/")}>AIM ESP32 HOME</Button>
-      </Box>
-      {children}
-    </>
-  );
+  return <>{children}</>;
 };
 
 export default Layout;

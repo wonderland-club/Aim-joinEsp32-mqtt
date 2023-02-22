@@ -5,7 +5,7 @@ import { useState, useEffect, useRef } from "react";
 import mqtt from "mqtt";
 import { Joystick } from "react-joystick-component";
 import Button from "@mui/material/Button";
-import { useNavigate } from "react-router-dom";
+import { Await, useNavigate } from "react-router-dom";
 import Typography from "@mui/material/Typography";
 import Modal from "@mui/material/Modal";
 
@@ -48,7 +48,7 @@ function Car(props) {
     // };
   }, []);
 
-  // 通道 消息
+  //  服务器 主题通道
   const { urlStr, passage } = props;
   const navigate = useNavigate();
 
@@ -83,6 +83,18 @@ function Car(props) {
 
   // 用于检测有没有在操作中，如果10秒中内无操作，页面将自动跳转至主页
   const [count, setCount] = useState(10);
+  const toHome = async () => {
+    await clientRef.current.publish(passage, "Bye", {}, (err) => {
+      if (err) {
+        console.error(err);
+      } else {
+        console.log(passage);
+        setTimeout(() => {
+          navigate("/");
+        }, 100);
+      }
+    });
+  };
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -90,14 +102,24 @@ function Car(props) {
     }, 1000);
 
     if (count <= 0) {
-      navigate("/");
+      clientRef.current.publish(passage, "Bye", {}, (err) => {
+        if (err) {
+          console.error(err);
+        } else {
+          setTimeout(() => {
+            navigate("/");
+          }, 100);
+        }
+      });
     }
-    return () => clearInterval(timer);
+    return () => {
+      clearInterval(timer);
+    };
   }, [count]);
 
   // 发送消息
-  const handleSendMessage = (message) => {
-    clientRef.current.publish(passage, message);
+  const handleSendMessage = async (message) => {
+    await clientRef.current.publish(passage, message);
   };
 
   const { Up, Down, Left, Right, Stop, Lifting, Pitching } = props.message;
@@ -124,77 +146,44 @@ function Car(props) {
       setMoveRecords(direction);
     }
   };
+
   const handleStop = () => {
     setMoveRecords(JoystickDirection[4]);
     handleSendMessage(Stop);
   };
+
   const joystickStart = () => {
     // console.log("start");
   };
-  return (
-    <>
-      <Box>
-        车号：{props.trainNumber}; 操纵杆方向：{moveRecords};剩余时间：{count}
-        秒;
-      </Box>
-      <LinearProgress />
+
+  //顶部导航栏
+  const TopNavigationBar = () => {
+    return (
       <Box
         sx={{
-          height: "calc(100vh - 60px)",
-          justifyContent: "space-around",
           display: "flex",
-          alignContent: "center",
           alignItems: "center",
-          background: "lightcoral",
+          justifyContent: "space-between",
+          height: "40px",
         }}
       >
-        {/* 操纵杆 */}
-        <Box>
-          <Joystick
-            size={150}
-            stickSize={70}
-            sticky={false}
-            baseColor="rgb(0, 0, 51,0.2)"
-            stickColor="rgba(133, 37, 60, 0.8)"
-            move={(eve) => handleMove(eve)}
-            stop={handleStop}
-            start={joystickStart}
-          ></Joystick>
-        </Box>
-
-        <Box sx={{ width: 250 }}>
-          <Button
-            sx={rightButtonStyle}
-            variant="outlined"
-            size="large"
-            fullWidth={true}
-            {...{
-              [start]: () => {
-                handleSendMessage(Lifting);
-                setCount(10);
-              },
-            }}
-            // {...{ [end]: () => handleSendMessage("end") }}
-          >
-            升 / 降
-          </Button>
-          <Button
-            sx={rightButtonStyle}
-            variant="outlined"
-            size="large"
-            fullWidth={true}
-            {...{
-              [start]: () => {
-                handleSendMessage(Pitching);
-                setCount(10);
-              },
-            }}
-            // {...{ [end]: () => handleSendMessage("end") }}
-          >
-            夹球 / 松开
-          </Button>
+        <Button onClick={toHome}>{props.trainNumber}</Button>
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-around",
+          }}
+        >
+          <Box>轮盘方向：{moveRecords};</Box>
+          <Box sx={{ width: "110px" }}>剩余时间：{count}</Box>
         </Box>
       </Box>
+    );
+  };
+  // 提示屏幕旋转起来
+  const Reminder = () => {
+    return (
       <Modal
         open={open}
         aria-labelledby="modal-modal-title"
@@ -211,6 +200,78 @@ function Car(props) {
           </Typography>
         </Box>
       </Modal>
+    );
+  };
+
+  return (
+    <>
+      <Box
+        sx={{
+          height: "100vh",
+        }}
+      >
+        <LinearProgress />
+        {TopNavigationBar()}
+        <Box
+          sx={{
+            height: "calc(100vh - 40px)",
+            justifyContent: "space-around",
+            display: "flex",
+            alignContent: "center",
+            alignItems: "center",
+            background: "lightcoral",
+          }}
+        >
+          {/* 操纵杆 */}
+          <Box>
+            <Joystick
+              size={150}
+              stickSize={70}
+              sticky={false}
+              baseColor="rgb(0, 0, 51,0.2)"
+              stickColor="rgba(133, 37, 60, 0.8)"
+              move={(eve) => handleMove(eve)}
+              stop={handleStop}
+              start={joystickStart}
+            ></Joystick>
+          </Box>
+
+          <Box sx={{ width: 250 }}>
+            <Button
+              sx={rightButtonStyle}
+              variant="outlined"
+              size="large"
+              fullWidth={true}
+              {...{
+                [start]: () => {
+                  handleSendMessage(Lifting);
+                  setCount(10);
+                },
+              }}
+              // {...{ [end]: () => handleSendMessage("end") }}
+            >
+              升 / 降
+            </Button>
+            <Button
+              sx={rightButtonStyle}
+              variant="outlined"
+              size="large"
+              fullWidth={true}
+              {...{
+                [start]: () => {
+                  handleSendMessage(Pitching);
+                  setCount(10);
+                },
+              }}
+              // {...{ [end]: () => handleSendMessage("end") }}
+            >
+              夹球 / 松开
+            </Button>
+          </Box>
+        </Box>
+      </Box>
+      {/* <Reminder /> */}
+      {Reminder()}
     </>
   );
 }

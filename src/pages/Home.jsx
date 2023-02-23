@@ -118,6 +118,7 @@ const Home = () => {
         isClick = false;
         console.log("ok_isClick", isClick);
         set_router_to_((preState) => {
+          sessionStorage.setItem("myData", JSON.stringify({ name: preState }));
           navigate(preState);
           return preState;
         });
@@ -146,7 +147,7 @@ const Home = () => {
   return (
     <>
       <Box sx={{ height: "100vh", alignItems: "center", display: "flex" }}>
-        <Grid container>
+        <Grid container sx={{ width: "100%" }}>
           <Grid sx={{ height: 80 }} xs={12} sm={5}>
             <h1>Elite ESP32 Car</h1>
           </Grid>

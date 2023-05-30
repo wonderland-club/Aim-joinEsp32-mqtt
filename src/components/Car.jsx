@@ -7,7 +7,6 @@ import { Joystick } from "react-joystick-component";
 import Button from "@mui/material/Button";
 import { Await, useNavigate } from "react-router-dom";
 import Typography from "@mui/material/Typography";
-import Modal from "@mui/material/Modal";
 
 function Car(props) {
   // 横屏检测
